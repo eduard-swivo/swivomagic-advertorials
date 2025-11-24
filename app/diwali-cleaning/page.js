@@ -50,13 +50,13 @@ export default function DiwaliCleaning() {
                     <p>Inventory is flying off the shelves as people prepare for guests. At just ₹699, it's cheaper than a bottle of cleaning spray and lasts for years. Don't be stuck scrubbing mirrors with newspaper this year.</p>
                 </div>
 
-                <a href="https://swivoproducts.com/pages/swivo-sutra-cleaning-kit" className="cta-button" style={{ backgroundColor: '#FF9933' }}>
+                <a href="https://swivomagic.com/pages/diwali-special" className="cta-button" style={{ backgroundColor: '#FF9933' }}>
                     CLAIM 50% OFF DIWALI SALE &gt;&gt;
                 </a>
 
                 <CommentSection />
             </div>
-            <StickyCTA />
+            <StickyCTA href="https://swivomagic.com/pages/diwali-special" />
             <Footer />
         </>
     );
