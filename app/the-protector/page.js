@@ -2,6 +2,8 @@ import Footer from '@/components/Footer';
 import ArticleMeta from '@/components/ArticleMeta';
 import CommentSection from '@/components/CommentSection';
 
+import StickyCTA from '@/components/StickyCTA';
+
 export const metadata = {
     title: 'The Protector - Swivo Magazine',
 };
@@ -53,6 +55,7 @@ export default function TheProtector() {
 
                 <CommentSection />
             </div>
+            <StickyCTA />
             <Footer />
         </>
     );

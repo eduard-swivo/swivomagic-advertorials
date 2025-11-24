@@ -423,6 +423,201 @@ a {
   font-family: var(--font-family-serif);
   font-size: 1.2rem;
   font-weight: 700;
+  font-family: var(--font-family-sans);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.comment {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #eee;
+  border-radius: 50%;
+  margin-right: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #777;
+}
+
+.comment-content {
+  background-color: #f0f2f5;
+  padding: 10px 15px;
+  border-radius: 18px;
+  flex-grow: 1;
+}
+
+.comment-header {
+  margin-bottom: 4px;
+}
+
+.comment-author {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #050505;
+  margin-right: 8px;
+}
+
+.comment-time {
+  font-size: 0.75rem;
+  color: #65676b;
+}
+
+.comment-text {
+  font-size: 0.95rem;
+  color: #050505;
+  margin-bottom: 0;
+}
+
+.comment-actions {
+  margin-top: 5px;
+  font-size: 0.75rem;
+  color: #65676b;
+  margin-left: 10px;
+}
+
+.comment-actions span {
+  margin-right: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.comment-actions span:hover {
+  text-decoration: underline;
+}
+
+.comment-input-placeholder input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background: #f0f2f5;
+  margin-top: 20px;
+}
+
+/* Footer */
+.footer {
+  margin-top: 60px;
+  padding: 40px 0;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.85rem;
+  color: #777;
+  text-align: center;
+  background-color: #fafafa;
+}
+
+.footer a {
+  margin: 0 10px;
+  text-decoration: underline;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+  .advertorial-title {
+    font-size: 1.8rem;
+  }
+
+  .header-container {
+    flex-direction: column;
+  }
+
+  .main-nav {
+    margin-top: 15px;
+  }
+
+  .main-nav a {
+    margin: 0 10px;
+  }
+}
+
+/* Homepage Styles */
+.intro-section h1 {
+  font-family: var(--font-family-serif);
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin-bottom: 15px;
+  color: var(--primary-color);
+}
+
+.intro-section p {
+  font-size: 1.2rem;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.section-title {
+  font-family: var(--font-family-sans);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-left: 5px solid var(--accent-color);
+  padding-left: 15px;
+}
+
+.article-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.article-card {
+  display: block;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  background: #fff;
+}
+
+.article-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-image {
+  height: 200px;
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.article-card:hover .card-image img {
+  transform: scale(1.05);
+}
+
+.card-content {
+  padding: 20px;
+}
+
+.card-category {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.card-title {
+  font-family: var(--font-family-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
   line-height: 1.4;
   margin-bottom: 15px;
   color: #111;
@@ -431,4 +626,46 @@ a {
 .card-meta {
   font-size: 0.85rem;
   color: #777;
+}
+
+/* Sticky CTA */
+.sticky-cta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  padding: 15px 20px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  border-top: 1px solid #eee;
+}
+
+.sticky-cta-container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.sticky-cta-button {
+  display: block;
+  background-color: var(--accent-color);
+  color: white;
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-align: center;
+  border-radius: 4px;
+  text-transform: uppercase;
+  width: 100%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  animation: pulse 2s infinite;
+}
+
+.sticky-cta-button:hover {
+  background-color: #b71c1c;
+}
+
+/* Add padding to body to prevent content being hidden behind sticky CTA */
+body {
+  padding-bottom: 80px;
 }

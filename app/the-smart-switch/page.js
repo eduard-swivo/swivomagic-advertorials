@@ -2,6 +2,8 @@ import Footer from '@/components/Footer';
 import ArticleMeta from '@/components/ArticleMeta';
 import CommentSection from '@/components/CommentSection';
 
+import StickyCTA from '@/components/StickyCTA';
+
 export const metadata = {
     title: 'The Smart Switch - Swivo Magazine',
 };
@@ -51,6 +53,7 @@ export default function TheSmartSwitch() {
 
                 <CommentSection />
             </div>
+            <StickyCTA />
             <Footer />
         </>
     );
