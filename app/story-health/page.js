@@ -1,7 +1,9 @@
 import Footer from '@/components/Footer';
+import ArticleMeta from '@/components/ArticleMeta';
+import CommentSection from '@/components/CommentSection';
 
 export const metadata = {
-    title: 'Story: Health - Swivo Magic',
+    title: 'Story: Health - Swivo Magazine',
 };
 
 export default function StoryHealth() {
@@ -9,10 +11,12 @@ export default function StoryHealth() {
         <>
             <div className="container advertorial-content">
                 <header className="advertorial-header">
+                    <span className="advertorial-label">Advertorial</span>
                     <h1 className="advertorial-title">Is Your "Clean" Home Actually Making You Sick? Why Homeowners Are Throwing Out Bleach For This "Ancient" Secret.</h1>
+                    <ArticleMeta author="Meera Patel" date="October 20, 2025" />
                 </header>
 
-                <img src="/images/lifestyle-shot.png" alt="Woman with headache" style={{ width: '100%', borderRadius: '10px', marginBottom: '30px' }} />
+                <img src="/images/lifestyle-shot.png" alt="Woman with headache" className="hero-image" />
 
                 <p>I thought I was doing the right thing. I scrubbed every inch of my house until it sparkled.</p>
                 <p>But there was a problem.</p>
@@ -25,8 +29,6 @@ export default function StoryHealth() {
 
                 <h2>The "Aha" Moment</h2>
                 <p>When the kit arrived, I realized this was different. No harsh warnings. No eye-watering chemical smell. Inside were three natural oil blends and three gorgeous reusable bottles.</p>
-
-                <img src="/images/kit-shot.png" alt="Swivo Sutra Kit" style={{ width: '100%', borderRadius: '10px', margin: '20px 0' }} />
 
                 <ol>
                     <li><strong>Pour</strong> the blend.</li>
@@ -53,6 +55,8 @@ export default function StoryHealth() {
                 <a href="https://swivoproducts.com/pages/swivo-sutra-cleaning-kit" className="cta-button">
                     CHECK AVAILABILITY &gt;&gt;
                 </a>
+
+                <CommentSection />
             </div>
             <Footer />
         </>

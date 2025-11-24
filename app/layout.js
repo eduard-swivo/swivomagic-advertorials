@@ -1,7 +1,8 @@
 import './globals.css';
+import Header from '@/components/Header';
 
 export const metadata = {
-    title: 'Swivo Magic Advertorials',
+    title: 'Swivo Magazine',
     description: 'Latest news and stories from Swivo Magic',
 };
 
@@ -11,9 +12,12 @@ export default function RootLayout({ children }) {
             <head>
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet" />
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet" />
             </head>
-            <body>{children}</body>
+            <body>
+                <Header />
+                {children}
+            </body>
         </html>
     );
 }

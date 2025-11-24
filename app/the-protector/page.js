@@ -1,7 +1,9 @@
 import Footer from '@/components/Footer';
+import ArticleMeta from '@/components/ArticleMeta';
+import CommentSection from '@/components/CommentSection';
 
 export const metadata = {
-    title: 'The Protector - Swivo Magic',
+    title: 'The Protector - Swivo Magazine',
 };
 
 export default function TheProtector() {
@@ -9,10 +11,12 @@ export default function TheProtector() {
         <>
             <div className="container advertorial-content">
                 <header className="advertorial-header">
+                    <span className="advertorial-label">Advertorial</span>
                     <h1 className="advertorial-title">WARNING: If You Have Pets Or Toddlers, Stop Mopping Your Floors Until You Read This.</h1>
+                    <ArticleMeta author="Anjali Gupta" date="October 22, 2025" />
                 </header>
 
-                <img src="/images/lifestyle-shot.png" alt="Baby on floor" style={{ width: '100%', borderRadius: '10px', marginBottom: '30px' }} />
+                <img src="/images/lifestyle-shot.png" alt="Baby on floor" className="hero-image" />
 
                 <p>It was a Tuesday afternoon when I saw it.</p>
                 <p>I had just mopped the floor with a popular "Fresh Scent" cleaner. Moments later, my dog walked across the wet tile and immediately started licking his paws.</p>
@@ -27,8 +31,6 @@ export default function TheProtector() {
 
                 <h2>Enter Swivo Sutra.</h2>
                 <p>I found Swivo Sutra on a forum for concerned parents. It’s a cleaning system designed to be ruthless on dirt but safe for the innocent.</p>
-
-                <img src="/images/kit-shot.png" alt="Swivo Sutra Kit" style={{ width: '100%', borderRadius: '10px', margin: '20px 0' }} />
 
                 <p>Unlike traditional cleaners that consist of 90% water and 10% harsh chemicals shipped in single-use plastic, Swivo sends you powerful plant-based concentrates. You just mix them with water in their durable, reusable bottles.</p>
 
@@ -48,6 +50,8 @@ export default function TheProtector() {
                 <a href="https://swivoproducts.com/pages/swivo-sutra-cleaning-kit" className="cta-button">
                     CLAIM 50% OFF KITS &gt;&gt;
                 </a>
+
+                <CommentSection />
             </div>
             <Footer />
         </>

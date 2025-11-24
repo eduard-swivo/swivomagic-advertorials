@@ -1,7 +1,9 @@
 import Footer from '@/components/Footer';
+import ArticleMeta from '@/components/ArticleMeta';
+import CommentSection from '@/components/CommentSection';
 
 export const metadata = {
-    title: 'The Smart Switch - Swivo Magic',
+    title: 'The Smart Switch - Swivo Magazine',
 };
 
 export default function TheSmartSwitch() {
@@ -9,10 +11,12 @@ export default function TheSmartSwitch() {
         <>
             <div className="container advertorial-content">
                 <header className="advertorial-header">
+                    <span className="advertorial-label">Advertorial</span>
                     <h1 className="advertorial-title">3 Reasons Why Smart Homeowners Are Ditching Chemical Sprays For This New "Just Add Water" Hack.</h1>
+                    <ArticleMeta author="Priya Sharma" date="October 24, 2025" />
                 </header>
 
-                <img src="/images/lifestyle-shot.png" alt="Happy homeowner cleaning" style={{ width: '100%', borderRadius: '10px', marginBottom: '30px' }} />
+                <img src="/images/lifestyle-shot.png" alt="Happy homeowner cleaning" className="hero-image" />
 
                 <p>Let’s be honest: Buying cleaning supplies is the worst.</p>
                 <p>You lug heavy bottles home from the store (which are mostly just water), they take up all your cabinet space, and then you throw the plastic away a month later. It’s wasteful and expensive.</p>
@@ -21,8 +25,6 @@ export default function TheSmartSwitch() {
 
                 <h2>Reason #1: It’s Not Toxic (But It Works)</h2>
                 <p>Most "deep cleaners" strip your skin and burn your nose. Swivo uses plant-based science to cut through grease and Indian hard-water stains without the toxicity. It’s safe for your skin, pets, and kids.</p>
-
-                <img src="/images/before-after.png" alt="Before and after cleaning results" style={{ width: '100%', borderRadius: '10px', margin: '20px 0' }} />
 
                 <h2>Reason #2: It De-Clutters Your Life</h2>
                 <p>Throw away the glass cleaner, the floor cleaner, the bathroom spray, and the kitchen degreaser.</p>
@@ -41,13 +43,13 @@ export default function TheSmartSwitch() {
                     <p>Cleaning used to feel like a chore that punished my body. Now, it feels lighter, safer, and honestly... smarter. Why keep paying for plastic waste and harsh chemicals?</p>
                 </div>
 
-                <img src="/images/kit-shot.png" alt="Swivo Sutra Cleaning Kit" style={{ width: '100%', borderRadius: '10px', marginTop: '20px' }} />
-
                 <p style={{ marginTop: '20px', fontStyle: 'italic' }}><strong>Special Offer For Our Readers:</strong> Swivo Sutra is offering a special introductory price for new customers, but kits are selling out fast. Check the link below to see if stock is still available.</p>
 
                 <a href="https://swivoproducts.com/pages/swivo-sutra-cleaning-kit" className="cta-button">
                     CHECK AVAILABILITY &gt;&gt;
                 </a>
+
+                <CommentSection />
             </div>
             <Footer />
         </>
