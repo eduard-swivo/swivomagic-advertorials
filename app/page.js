@@ -4,6 +4,20 @@ import Footer from '@/components/Footer';
 export default function Home() {
     const articles = [
         {
+            slug: 'diwali-cleaning',
+            title: '"Diwali Ki Safai" Without The Back Pain? Why This Tool Is Replacing The Ladder In Indian Homes This Season.',
+            image: '/images/lifestyle-shot.png',
+            category: 'Seasonal Trend',
+            author: 'Anjali S.'
+        },
+        {
+            slug: 'the-motorist',
+            title: 'Stop Paying Your "Car Wash Guy" To Scratch Your Paint. Here’s The Rs. 1500 Hack That Keeps Cars Showroom-Shiny.',
+            image: '/images/kit-shot.png',
+            category: 'Automotive Hack',
+            author: 'Vikram R.'
+        },
+        {
             slug: 'the-smart-switch',
             title: '3 Reasons Why Smart Homeowners Are Ditching Chemical Sprays For This New "Just Add Water" Hack.',
             image: '/images/kit-shot.png',
