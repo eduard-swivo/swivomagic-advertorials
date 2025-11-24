@@ -1,0 +1,110 @@
+:root {
+  --font-family-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --primary-color: #2c3e50;
+  --accent-color: #e67e22;
+  --text-color: #333;
+  --bg-color: #fff;
+  --light-gray: #f8f9fa;
+  --border-color: #e9ecef;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  color: var(--text-color);
+  background: var(--bg-color);
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Advertorial Specific Styles */
+.advertorial-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.advertorial-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+.advertorial-content {
+  font-size: 1.1rem;
+}
+
+.advertorial-content p {
+  margin-bottom: 20px;
+}
+
+.advertorial-content h2 {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  font-size: 1.8rem;
+}
+
+.advertorial-content ul {
+  margin-bottom: 20px;
+  padding-left: 20px;
+}
+
+.advertorial-content li {
+  margin-bottom: 10px;
+}
+
+.cta-button {
+  display: inline-block;
+  background-color: #d32f2f; /* Red/Attention color */
+  color: white;
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 5px;
+  text-align: center;
+  margin: 30px 0;
+  width: 100%;
+  text-transform: uppercase;
+}
+
+.cta-button:hover {
+  background-color: #b71c1c;
+}
+
+.footer {
+  margin-top: 50px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
+}
+
+.footer a {
+  margin: 0 10px;
+  text-decoration: underline;
+}
+
+.warning-box {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  color: #856404;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+}
