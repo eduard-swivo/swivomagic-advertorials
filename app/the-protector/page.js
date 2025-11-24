@@ -12,6 +12,8 @@ export default function TheProtector() {
                     <h1 className="advertorial-title">WARNING: If You Have Pets Or Toddlers, Stop Mopping Your Floors Until You Read This.</h1>
                 </header>
 
+                <img src="/images/lifestyle-shot.png" alt="Baby on floor" style={{ width: '100%', borderRadius: '10px', marginBottom: '30px' }} />
+
                 <p>It was a Tuesday afternoon when I saw it.</p>
                 <p>I had just mopped the floor with a popular "Fresh Scent" cleaner. Moments later, my dog walked across the wet tile and immediately started licking his paws.</p>
                 <p>Then, my baby crawled across the same spot and put her fingers in her mouth.</p>
@@ -25,6 +27,9 @@ export default function TheProtector() {
 
                 <h2>Enter Swivo Sutra.</h2>
                 <p>I found Swivo Sutra on a forum for concerned parents. It’s a cleaning system designed to be ruthless on dirt but safe for the innocent.</p>
+
+                <img src="/images/kit-shot.png" alt="Swivo Sutra Kit" style={{ width: '100%', borderRadius: '10px', margin: '20px 0' }} />
+
                 <p>Unlike traditional cleaners that consist of 90% water and 10% harsh chemicals shipped in single-use plastic, Swivo sends you powerful plant-based concentrates. You just mix them with water in their durable, reusable bottles.</p>
 
                 <h2>Why Moms & Pet Owners Are Switching:</h2>

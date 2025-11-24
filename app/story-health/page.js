@@ -12,6 +12,8 @@ export default function StoryHealth() {
                     <h1 className="advertorial-title">Is Your "Clean" Home Actually Making You Sick? Why Homeowners Are Throwing Out Bleach For This "Ancient" Secret.</h1>
                 </header>
 
+                <img src="/images/lifestyle-shot.png" alt="Woman with headache" style={{ width: '100%', borderRadius: '10px', marginBottom: '30px' }} />
+
                 <p>I thought I was doing the right thing. I scrubbed every inch of my house until it sparkled.</p>
                 <p>But there was a problem.</p>
                 <p>Every time I cleaned, my skin would burn. The fumes from those neon-colored bottles made me cough until my chest hurt. Even the so-called "Eco-Friendly" brands I paid extra for left me with headaches and dry, cracked hands.</p>
@@ -23,6 +25,9 @@ export default function StoryHealth() {
 
                 <h2>The "Aha" Moment</h2>
                 <p>When the kit arrived, I realized this was different. No harsh warnings. No eye-watering chemical smell. Inside were three natural oil blends and three gorgeous reusable bottles.</p>
+
+                <img src="/images/kit-shot.png" alt="Swivo Sutra Kit" style={{ width: '100%', borderRadius: '10px', margin: '20px 0' }} />
+
                 <ol>
                     <li><strong>Pour</strong> the blend.</li>
                     <li><strong>Add</strong> tap water.</li>
