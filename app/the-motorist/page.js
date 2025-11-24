@@ -50,14 +50,14 @@ export default function TheMotorist() {
                     <p>Your car cost Lakhs. Don't ruin the finish with a Rs. 20 rag. For just ₹699, you can get that showroom shine every single morning.</p>
                 </div>
 
-                <a href="https://swivomagic.com/pages/diwali-special" className="cta-button">
+                <a href="https://swivomagic.com/pages/adv-motorists" className="cta-button">
                     CHECK AVAILABILITY FOR CAR OWNERS &gt;&gt;
                 </a>
                 <p style={{ textAlign: 'center', fontSize: '0.9rem', color: '#666' }}>30-Day Money Back Guarantee</p>
 
                 <CommentSection />
             </div>
-            <StickyCTA href="https://swivomagic.com/pages/diwali-special" />
+            <StickyCTA href="https://swivomagic.com/pages/adv-motorists" />
             <Footer />
         </>
     );
