@@ -17,7 +17,7 @@ export default function TheMotorist() {
                     <ArticleMeta author="Vikram R." date="October 25, 2025" readTime="3 min read" />
                 </header>
 
-                <img src="/images/kit-shot.png" alt="Car cleaning hack" className="hero-image" />
+                <img src="/images/motorist-hero.jpg" alt="Car cleaning hack" className="hero-image" />
 
                 <p><strong>If you own an SUV or Sedan in India, you know the struggle: One day after a wash, it’s covered in dust again. Here is the genius tool solving that problem.</strong></p>
 

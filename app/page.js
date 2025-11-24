@@ -6,14 +6,14 @@ export default function Home() {
         {
             slug: 'diwali-cleaning',
             title: '"Diwali Ki Safai" Without The Back Pain? Why This Tool Is Replacing The Ladder In Indian Homes This Season.',
-            image: '/images/lifestyle-shot.png',
+            image: '/images/diwali-hero.webp',
             category: 'Seasonal Trend',
             author: 'Anjali S.'
         },
         {
             slug: 'the-motorist',
             title: 'Stop Paying Your "Car Wash Guy" To Scratch Your Paint. Here’s The Rs. 1500 Hack That Keeps Cars Showroom-Shiny.',
-            image: '/images/kit-shot.png',
+            image: '/images/motorist-hero.jpg',
             category: 'Automotive Hack',
             author: 'Vikram R.'
         },

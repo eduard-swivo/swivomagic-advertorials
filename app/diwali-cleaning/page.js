@@ -17,7 +17,7 @@ export default function DiwaliCleaning() {
                     <ArticleMeta author="Anjali S." date="October 26, 2025" readTime="4 min read" />
                 </header>
 
-                <img src="/images/lifestyle-shot.png" alt="Diwali cleaning made easy" className="hero-image" />
+                <img src="/images/diwali-hero.webp" alt="Diwali cleaning made easy" className="hero-image" />
 
                 <p><strong>Cleaning ceiling fans and cobwebs used to mean risking a fall. Now, there is a safer, faster way to get your home festival-ready.</strong></p>
 
