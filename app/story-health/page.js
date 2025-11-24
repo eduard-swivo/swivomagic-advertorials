@@ -16,7 +16,7 @@ export default function StoryHealth() {
                     <ArticleMeta author="Meera Patel" date="October 20, 2025" />
                 </header>
 
-                <img src="/images/lifestyle-shot.png" alt="Woman with headache" className="hero-image" />
+                <img src="/images/before-after.png" alt="Before and After Cleaning" className="hero-image" />
 
                 <p>I thought I was doing the right thing. I scrubbed every inch of my house until it sparkled.</p>
                 <p>But there was a problem.</p>

@@ -16,7 +16,7 @@ export default function TheSmartSwitch() {
                     <ArticleMeta author="Priya Sharma" date="October 24, 2025" />
                 </header>
 
-                <img src="/images/lifestyle-shot.png" alt="Happy homeowner cleaning" className="hero-image" />
+                <img src="/images/kit-shot.png" alt="Swivo Sutra Cleaning Kit" className="hero-image" />
 
                 <p>Let’s be honest: Buying cleaning supplies is the worst.</p>
                 <p>You lug heavy bottles home from the store (which are mostly just water), they take up all your cabinet space, and then you throw the plastic away a month later. It’s wasteful and expensive.</p>

@@ -6,21 +6,21 @@ export default function Home() {
         {
             slug: 'the-smart-switch',
             title: '3 Reasons Why Smart Homeowners Are Ditching Chemical Sprays For This New "Just Add Water" Hack.',
-            image: '/images/lifestyle-shot.png',
+            image: '/images/kit-shot.png',
             category: 'Lifestyle',
             author: 'Priya Sharma'
         },
         {
             slug: 'the-protector',
             title: 'WARNING: If You Have Pets Or Toddlers, Stop Mopping Your Floors Until You Read This.',
-            image: '/images/lifestyle-shot.png', // Using same image as placeholder if specific one not available, or use kit-shot
+            image: '/images/lifestyle-shot.png',
             category: 'Family Safety',
             author: 'Anjali Gupta'
         },
         {
             slug: 'story-health',
             title: 'Is Your "Clean" Home Actually Making You Sick? Why Homeowners Are Throwing Out Bleach For This "Ancient" Secret.',
-            image: '/images/lifestyle-shot.png',
+            image: '/images/before-after.png',
             category: 'Health',
             author: 'Meera Patel'
         }
