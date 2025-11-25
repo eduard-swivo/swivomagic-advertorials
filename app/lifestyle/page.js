@@ -1,18 +1,24 @@
 import Link from 'next/link';
 import Footer from '@/components/Footer';
-import { articles } from '@/data/articles';
+import { getArticlesByCategory } from '@/data/articles';
 
-export default function Home() {
+export const metadata = {
+    title: 'Lifestyle - Swivo Magazine',
+};
+
+export default function LifestylePage() {
+    const articles = getArticlesByCategory('Lifestyle');
+
     return (
         <>
             <div className="container">
                 <section className="intro-section">
-                    <h1>Welcome to Swivo Magazine</h1>
-                    <p>Your daily source for home hacks, sustainable living, and family safety tips.</p>
+                    <h1>Lifestyle</h1>
+                    <p>Smart solutions for modern living—from home care to automotive hacks.</p>
                 </section>
 
                 <section className="latest-articles">
-                    <h2 className="section-title">Latest Stories</h2>
+                    <h2 className="section-title">Lifestyle Articles</h2>
                     <div className="article-grid">
                         {articles.map((article) => (
                             <Link href={`/${article.slug}`} key={article.slug} className="article-card">

@@ -1,18 +1,24 @@
 import Link from 'next/link';
 import Footer from '@/components/Footer';
-import { articles } from '@/data/articles';
+import { getArticlesByCategory } from '@/data/articles';
 
-export default function Home() {
+export const metadata = {
+    title: 'Health & Family - Swivo Magazine',
+};
+
+export default function HealthFamilyPage() {
+    const articles = getArticlesByCategory('Health & Family');
+
     return (
         <>
             <div className="container">
                 <section className="intro-section">
-                    <h1>Welcome to Swivo Magazine</h1>
-                    <p>Your daily source for home hacks, sustainable living, and family safety tips.</p>
+                    <h1>Health & Family</h1>
+                    <p>Keeping your loved ones safe and healthy with expert advice and trusted solutions.</p>
                 </section>
 
                 <section className="latest-articles">
-                    <h2 className="section-title">Latest Stories</h2>
+                    <h2 className="section-title">Health & Family Articles</h2>
                     <div className="article-grid">
                         {articles.map((article) => (
                             <Link href={`/${article.slug}`} key={article.slug} className="article-card">
