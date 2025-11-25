@@ -5,10 +5,10 @@ export default function Footer() {
         <footer className="footer">
             <div className="container">
                 <p>
-                    <Link href="#">Contact us</Link> |
-                    <Link href="#">About us</Link> |
-                    <Link href="#">Privacy Policy</Link> |
-                    <Link href="#">Terms of Service</Link>
+                    <Link href="/contact-us">Contact us</Link> |
+                    <Link href="/about-us">About us</Link> |
+                    <Link href="/privacy-policy">Privacy Policy</Link> |
+                    <Link href="/terms-of-service">Terms of Service</Link>
                 </p>
                 <p style={{ marginTop: '20px' }}>
                     &copy; {new Date().getFullYear()} Swivo Magic. All rights reserved.
