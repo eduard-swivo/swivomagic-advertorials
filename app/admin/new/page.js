@@ -28,6 +28,7 @@ export default function NewArticle() {
         published_date: new Date().toISOString().split('T')[0],
         excerpt: '',
         hero_image: '',
+        second_image: '',
         advertorial_label: '',
         hook: '',
         story: [''],
@@ -123,6 +124,40 @@ export default function NewArticle() {
         } catch (error) {
             console.error('Generation error:', error);
             alert('Failed to generate article. Please try again.');
+        } finally {
+            setGenerating(false);
+        }
+    };
+
+    const handleRegenerateImages = async () => {
+        if (!formData.hook) {
+            alert('No hook available to base images on.');
+            return;
+        }
+
+        setGenerating(true);
+        try {
+            const res = await fetch('/api/regenerate-images', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    hook: formData.hook,
+                    productUrl,
+                    productImages: productImages.length > 0 ? productImages : null,
+                    productTitle: formData.title // Pass title as context
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.success && data.images) {
+                setGeneratedImages(data.images);
+            } else {
+                alert('Error regenerating images: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to regenerate images');
         } finally {
             setGenerating(false);
         }
@@ -498,95 +533,169 @@ export default function NewArticle() {
                             marginBottom: '32px',
                             border: '2px solid #bbf7d0'
                         }}>
-                            <h3 style={{ color: '#166534', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                🎨 AI Generated Images
-                            </h3>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                <h3 style={{ color: '#166534', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                                    🎨 AI Generated Images
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={handleRegenerateImages}
+                                    disabled={generating}
+                                    style={{
+                                        padding: '8px 16px',
+                                        background: generating ? '#9ca3af' : '#166534',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        cursor: generating ? 'not-allowed' : 'pointer',
+                                        fontSize: '13px',
+                                        fontWeight: '600'
+                                    }}
+                                >
+                                    {generating ? '🔄 Regenerating...' : '🔄 Regenerate Images'}
+                                </button>
+                            </div>
+
                             <p style={{ marginBottom: '16px', color: '#15803d', fontSize: '14px' }}>
                                 <strong>Images are automatically saved to Vercel Blob!</strong>
-                                <br />
-                                Click "Use as Hero" to instantly set an image as the article's hero image.
                             </p>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
-                                {generatedImages.map((imgData, i) => {
-                                    // Handle both string (old) and object (new) formats
-                                    const img = typeof imgData === 'string' ? { url: imgData, engine: 'unknown' } : imgData;
 
-                                    return (
-                                        <div key={i} style={{ position: 'relative' }}>
-                                            {/* Engine Badge */}
-                                            <div style={{
-                                                position: 'absolute',
-                                                top: '8px',
-                                                right: '8px',
-                                                background: img.engine === 'google' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)',
-                                                color: img.engine === 'google' ? '#ea4335' : 'white',
-                                                padding: '4px 8px',
-                                                borderRadius: '12px',
-                                                fontSize: '11px',
-                                                fontWeight: '700',
-                                                zIndex: 10,
-                                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                                                border: img.engine === 'google' ? '1px solid #ea4335' : 'none'
-                                            }}>
-                                                {img.engine === 'google' ? '🍌 Google Imagen' : (img.engine === 'dalle' ? '🤖 DALL-E 3' : '❓ Unknown')}
-                                            </div>
-
-                                            <img
-                                                src={img.url}
-                                                alt={`Generated ${i + 1}`}
-                                                style={{
-                                                    width: '100%',
-                                                    borderRadius: '8px',
-                                                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                                                    border: '1px solid #bbf7d0',
-                                                    minHeight: '200px',
-                                                    background: '#eee'
-                                                }}
-                                            />
-                                            {/* Debug URL */}
-                                            <div style={{ fontSize: '10px', color: '#666', marginTop: '4px', wordBreak: 'break-all' }}>
-                                                {img.url ? img.url.substring(0, 50) + '...' : 'No URL'}
-                                            </div>
-                                            <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setFormData(prev => ({ ...prev, hero_image: img.url }))}
-                                                    style={{
-                                                        flex: 1,
-                                                        padding: '8px',
-                                                        background: '#166534',
-                                                        color: 'white',
-                                                        border: 'none',
-                                                        borderRadius: '6px',
-                                                        fontSize: '13px',
-                                                        fontWeight: '600',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                >
-                                                    Use as Hero
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        navigator.clipboard.writeText(img.url);
-                                                        alert('URL copied!');
-                                                    }}
-                                                    style={{
-                                                        padding: '8px',
-                                                        background: 'white',
-                                                        color: '#166534',
-                                                        border: '1px solid #166534',
-                                                        borderRadius: '6px',
-                                                        fontSize: '13px',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                >
-                                                    Copy URL
-                                                </button>
-                                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+                                {/* Image 1: Problem */}
+                                {generatedImages[0] && (
+                                    <div style={{ position: 'relative' }}>
+                                        <div style={{ marginBottom: '8px', fontWeight: 'bold', color: '#166534' }}>
+                                            Image 1: The Problem (Hero)
+                                            {generatedImages[0].engine && (
+                                                <span style={{
+                                                    marginLeft: '8px',
+                                                    fontSize: '10px',
+                                                    padding: '2px 6px',
+                                                    borderRadius: '4px',
+                                                    background: generatedImages[0].engine === 'google' ? '#FEF08A' : '#DBEAFE',
+                                                    color: generatedImages[0].engine === 'google' ? '#854D0E' : '#1E40AF',
+                                                    border: '1px solid rgba(0,0,0,0.1)'
+                                                }}>
+                                                    {generatedImages[0].engine === 'google' ? '🍌 Google Imagen' : '🤖 DALL-E 3'}
+                                                </span>
+                                            )}
                                         </div>
-                                    );
-                                })}
+                                        <img
+                                            src={generatedImages[0].url || generatedImages[0]}
+                                            alt="Problem"
+                                            style={{
+                                                width: '100%',
+                                                borderRadius: '8px',
+                                                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                                                border: '1px solid #bbf7d0'
+                                            }}
+                                        />
+                                        <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({ ...prev, hero_image: generatedImages[0].url || generatedImages[0] }))}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '8px',
+                                                    background: '#166534',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '6px',
+                                                    fontSize: '13px',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Set as Hero Image
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(generatedImages[0].url || generatedImages[0]);
+                                                    alert('URL copied!');
+                                                }}
+                                                style={{
+                                                    padding: '8px',
+                                                    background: 'white',
+                                                    color: '#166534',
+                                                    border: '1px solid #166534',
+                                                    borderRadius: '6px',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Copy URL
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Image 2: Solution */}
+                                {generatedImages[1] && (
+                                    <div style={{ position: 'relative' }}>
+                                        <div style={{ marginBottom: '8px', fontWeight: 'bold', color: '#166534' }}>
+                                            Image 2: The Solution (Body)
+                                            {generatedImages[1].engine && (
+                                                <span style={{
+                                                    marginLeft: '8px',
+                                                    fontSize: '10px',
+                                                    padding: '2px 6px',
+                                                    borderRadius: '4px',
+                                                    background: generatedImages[1].engine === 'google' ? '#FEF08A' : '#DBEAFE',
+                                                    color: generatedImages[1].engine === 'google' ? '#854D0E' : '#1E40AF',
+                                                    border: '1px solid rgba(0,0,0,0.1)'
+                                                }}>
+                                                    {generatedImages[1].engine === 'google' ? '🍌 Google Imagen' : '🤖 DALL-E 3'}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <img
+                                            src={generatedImages[1].url || generatedImages[1]}
+                                            alt="Solution"
+                                            style={{
+                                                width: '100%',
+                                                borderRadius: '8px',
+                                                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                                                border: '1px solid #bbf7d0'
+                                            }}
+                                        />
+                                        <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({ ...prev, second_image: generatedImages[1].url || generatedImages[1] }))}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '8px',
+                                                    background: '#15803d',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '6px',
+                                                    fontSize: '13px',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Set as Second Image
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(generatedImages[1].url || generatedImages[1]);
+                                                    alert('URL copied!');
+                                                }}
+                                                style={{
+                                                    padding: '8px',
+                                                    background: 'white',
+                                                    color: '#15803d',
+                                                    border: '1px solid #15803d',
+                                                    borderRadius: '6px',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Copy URL
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -681,6 +790,18 @@ export default function NewArticle() {
                             placeholder="/images/motorist-hero.jpg"
                         />
                         <small>Upload image to /public/images/ first</small>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Second Image URL (Solution)</label>
+                        <input
+                            type="text"
+                            name="second_image"
+                            value={formData.second_image}
+                            onChange={handleChange}
+                            placeholder="URL for the solution/transformation image"
+                        />
+                        <small>Displayed before the Benefits section</small>
                     </div>
 
                     <div className="form-group">

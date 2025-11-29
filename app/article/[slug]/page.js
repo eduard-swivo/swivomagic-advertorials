@@ -60,6 +60,16 @@ export default async function ArticlePage({ params }) {
                     <p key={index}>{paragraph}</p>
                 ))}
 
+                {/* Second Image (Solution) */}
+                {article.second_image && (
+                    <img
+                        src={article.second_image}
+                        alt="Transformation"
+                        className="content-image"
+                        style={{ width: '100%', borderRadius: '8px', margin: '24px 0' }}
+                    />
+                )}
+
                 {/* Benefits Section */}
                 {benefits && benefits.length > 0 && (
                     <>
