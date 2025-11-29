@@ -47,21 +47,6 @@ export default function AdminDashboard() {
         }
     };
 
-    const initDatabase = async () => {
-        try {
-            const res = await fetch('/api/init-db');
-            const data = await res.json();
-            if (data.success) {
-                setMessage('Database initialized successfully!');
-            } else {
-                setMessage('Database already initialized or error occurred');
-            }
-            setTimeout(() => setMessage(''), 3000);
-        } catch (error) {
-            console.error('Error initializing database:', error);
-        }
-    };
-
     if (loading) {
         return <div className="admin-container"><p>Loading...</p></div>;
     }
@@ -71,9 +56,6 @@ export default function AdminDashboard() {
             <header className="admin-header">
                 <h1>Article Management</h1>
                 <div className="admin-actions">
-                    <button onClick={initDatabase} className="btn-secondary">
-                        Initialize Database
-                    </button>
                     <Link href="/admin/new" className="btn-primary">
                         + New Article
                     </Link>
