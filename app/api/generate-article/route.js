@@ -261,14 +261,14 @@ Generate a complete advertorial with:
 
 9. HERO IMAGE PROMPTS: Create 2 DRAMATIC, attention-grabbing image prompts that DIRECTLY relate to the selected ANGLE (${angle}).
    
-   **IMAGE 1 (HERO IMAGE) - PROBLEM FOCUS:**
+   **IMAGE 1 (HERO IMAGE):**
    - Follow the instruction: "${selectedAngleInstruction.split('Image 1: ')[1].split(' Image 2:')[0]}"
    - Make it relatable and dramatic
-   ${angle === 'before-after'
-            ? '- **EXCEPTION: For Before & After angle, you MAY show a split screen with problem (left) and solution/product (right)**'
+   ${['before-after', 'in-use', 'in-hand', 'after'].includes(angle)
+            ? `- For this angle (${angle}), you MAY show the product as specified in the angle instruction`
             : '- **CRITICAL: DO NOT show ANY products, solutions, or cleaning items in Image 1**\n   - **CRITICAL: Focus ONLY on the problem, frustration, mess, or pain point**'}
-   - Show the emotional impact of the problem (frustrated person, messy situation, etc.)
-   ${angle !== 'before-after' ? '- Example: "Close-up of frustrated Indian woman looking at messy kitchen counter with spills and stains" (NO cleaning products visible)' : ''}
+   - Show the emotional impact ${['before-after', 'in-use', 'in-hand', 'after'].includes(angle) ? 'and/or the product in action' : '(frustrated person, messy situation, etc.)'}
+   ${!['before-after', 'in-use', 'in-hand', 'after'].includes(angle) ? '- Example: "Close-up of frustrated Indian woman looking at messy kitchen counter with spills and stains" (NO cleaning products visible)' : ''}
    
    **IMAGE 2 - SOLUTION/PRODUCT:**
    - Follow the instruction: "${selectedAngleInstruction.split('Image 2: ')[1]}"
