@@ -374,6 +374,11 @@ Return ONLY valid JSON in this exact format:
 
 // Generate article from ad creative
 async function generateFromAdCreative(imageUrl, productUrl, productDescription = null, productMainImage = null) {
+    console.log('🎬 generateFromAdCreative called');
+    console.log('Product URL:', productUrl);
+    console.log('Has productDescription:', !!productDescription);
+    console.log('Has productMainImage:', !!productMainImage);
+
     const productData = await scrapeProductPage(productUrl);
 
     const completion = await openai.chat.completions.create({
