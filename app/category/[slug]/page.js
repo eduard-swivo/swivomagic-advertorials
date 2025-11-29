@@ -46,7 +46,7 @@ export default async function CategoryPage({ params }) {
                 <section className="intro-section">
                     <h1>{categoryName}</h1>
                     <p>Browse all articles in {categoryName}</p>
-                    <Link href="/" style={{ color: '#2563eb', textDecoration: 'none', display: 'block', marginTop: '15px', marginBottom: '30px' }}>
+                    <Link href="/" style={{ color: '#2563eb', textDecoration: 'none', display: 'block', marginTop: '15px' }}>
                         ← Back to Home
                     </Link>
                 </section>

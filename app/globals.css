@@ -675,14 +675,15 @@ a {
 body {
   padding-bottom: 80px;
 }
+
 /* Spacing Fixes */
 .intro-section {
-  margin-bottom: 40px;
+  margin-bottom: 20px;
   padding-bottom: 20px;
 }
 
 .latest-articles {
-  margin-top: 40px;
+  margin-top: 20px;
 }
 
 .section-title {
