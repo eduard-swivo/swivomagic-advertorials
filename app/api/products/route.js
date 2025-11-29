@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getProducts, createProduct } from '@/lib/db';
+import { put } from '@vercel/blob';
 
 export async function GET() {
     try {
