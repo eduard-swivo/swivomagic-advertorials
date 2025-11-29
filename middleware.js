@@ -39,6 +39,11 @@ export function middleware(request) {
             return NextResponse.next();
         }
 
+        // If path starts with /category/, let it through (don't rewrite)
+        if (pathname.startsWith('/category/')) {
+            return NextResponse.next();
+        }
+
         // If path is NOT starting with /article, rewrite it to /article/[slug]
         // This allows 'latest.swivomagic.com/my-slug' to render 'app/article/[slug]'
         if (!pathname.startsWith('/article/')) {

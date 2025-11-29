@@ -9,8 +9,8 @@ export default function Header() {
                 </div>
                 <nav className="main-nav">
                     <Link href="/">Home</Link>
-                    <Link href="/lifestyle">Lifestyle</Link>
-                    <Link href="/health-family">Health & Family</Link>
+                    <Link href="/category/lifestyle">Lifestyle</Link>
+                    <Link href="/category/health-family">Health & Family</Link>
                 </nav>
             </div>
         </header>
