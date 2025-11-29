@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { sql } from '@vercel/postgres';
 import Footer from '@/components/Footer';
 
+export const dynamic = 'force-dynamic';
+
 // Get articles by category
 async function getArticlesByCategory(category) {
     try {
