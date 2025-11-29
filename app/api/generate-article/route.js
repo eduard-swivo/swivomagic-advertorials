@@ -415,16 +415,23 @@ ${productDescription ? `- Physical Description: "${productDescription}"` : ''}
 - If the ad mentions specific dangers, statistics, or claims, reference them in the story
 
 **IMAGE GENERATION:**
-- **IMAGE 1 (HERO)**: Recreate or echo the PROBLEM shown in the ad creative
-  * If the ad shows danger/fear (e.g., toxic home, health risk), Image 1 should show that same danger
-  * Match the visual style and emotional impact of the ad
-  * **DO NOT show products in Image 1** - only the problem/fear
-  * Example: If ad shows "toxic danger in home", Image 1 = "Worried Indian family in home with subtle danger symbols, no products visible"
+- **IMAGE 1 (HERO)**: Based on the HOOK/TITLE you generated from the ad creative
+  * The hook/title describes the PROBLEM - Image 1 must visualize ONLY that problem
+  * **CRITICAL PROHIBITION - Image 1 must NOT contain:**
+    - NO product bottles, containers, or packaging
+    - NO cleaning supplies or solutions
+    - NO branded items or product names
+    - NO "after" scenes or solutions
+  * **ONLY SHOW**: The danger, fear, problem, or emotional pain from the hook/title
+  * Examples:
+    - If hook is "The Silent Danger Lurking in Your Home" → Image 1 = "Worried Indian family in dimly lit home with toxic warning symbols on walls, child coughing, NO products visible"
+    - If hook is "Why Indian Mothers Are Switching" → Image 1 = "Frustrated Indian mother looking at messy kitchen, exhausted expression, NO cleaning products visible"
+    - If hook is "Scientists Discover Hidden Toxins" → Image 1 = "Indian household with danger/radiation symbols, concerned parents, NO products visible"
 
 - **IMAGE 2**: Show the SOLUTION with the actual product
   * Show "${productData.title}" as the answer to the problem from the ad
   ${productMainImage ? '* **CRITICAL: Base the product appearance on the MAIN PRODUCT IMAGE provided. Match it exactly.**' : ''}
-  * Show relief, transformation, or safety
+  * Show relief, transformation, or safety WITH the product
 
 **FORMATTING:**
 - Generate a URL-friendly slug from the headline (lowercase, hyphens, 5-8 words max)
