@@ -144,7 +144,7 @@ export default function EditArticle({ params }) {
         }
     };
 
-    const handleRegenerateImages = async () => {
+    const handleRegenerateHeroImage = async () => {
         if (!formData.hook) {
             alert('Hook paragraph is required to regenerate images');
             return;
@@ -158,25 +158,63 @@ export default function EditArticle({ params }) {
                 body: JSON.stringify({
                     hook: formData.hook,
                     productUrl: formData.cta_link,
-                    productTitle: formData.title
+                    productTitle: formData.title,
+                    imageIndex: 0 // Only generate first image
                 })
             });
 
             const data = await res.json();
 
-            if (data.success && data.images) {
+            if (data.success && data.images && data.images[0]) {
                 setFormData(prev => ({
                     ...prev,
-                    hero_image: data.images[0]?.url || prev.hero_image,
-                    second_image: data.images[1]?.url || prev.second_image
+                    hero_image: data.images[0].url
                 }));
-                alert('Images regenerated successfully!');
+                alert('Hero image regenerated successfully!');
             } else {
-                alert('Error regenerating images: ' + (data.error || 'Unknown error'));
+                alert('Error regenerating hero image: ' + (data.error || 'Unknown error'));
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Failed to regenerate images');
+            alert('Failed to regenerate hero image');
+        } finally {
+            setRegenerating(false);
+        }
+    };
+
+    const handleRegenerateSecondImage = async () => {
+        if (!formData.hook) {
+            alert('Hook paragraph is required to regenerate images');
+            return;
+        }
+
+        setRegenerating(true);
+        try {
+            const res = await fetch('/api/regenerate-images', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    hook: formData.hook,
+                    productUrl: formData.cta_link,
+                    productTitle: formData.title,
+                    imageIndex: 1 // Only generate second image
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.success && data.images && data.images[1]) {
+                setFormData(prev => ({
+                    ...prev,
+                    second_image: data.images[1].url
+                }));
+                alert('Second image regenerated successfully!');
+            } else {
+                alert('Error regenerating second image: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to regenerate second image');
         } finally {
             setRegenerating(false);
         }
@@ -283,11 +321,32 @@ export default function EditArticle({ params }) {
                         required
                     />
                     {formData.hero_image && (
-                        <img
-                            src={formData.hero_image}
-                            alt="Hero preview"
-                            style={{ marginTop: '12px', maxWidth: '300px', borderRadius: '8px', border: '2px solid #e5e7eb' }}
-                        />
+                        <div>
+                            <img
+                                src={formData.hero_image}
+                                alt="Hero preview"
+                                style={{ marginTop: '12px', maxWidth: '300px', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                            />
+                            <button
+                                type="button"
+                                onClick={handleRegenerateHeroImage}
+                                disabled={regenerating}
+                                style={{
+                                    marginTop: '12px',
+                                    padding: '8px 16px',
+                                    background: regenerating ? '#9ca3af' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    fontSize: '13px',
+                                    fontWeight: '600',
+                                    cursor: regenerating ? 'not-allowed' : 'pointer',
+                                    display: 'block'
+                                }}
+                            >
+                                {regenerating ? '🔄 Regenerating...' : '🎨 Regenerate Hero Image'}
+                            </button>
+                        </div>
                     )}
                 </div>
 
@@ -300,11 +359,32 @@ export default function EditArticle({ params }) {
                         onChange={handleChange}
                     />
                     {formData.second_image && (
-                        <img
-                            src={formData.second_image}
-                            alt="Second image preview"
-                            style={{ marginTop: '12px', maxWidth: '300px', borderRadius: '8px', border: '2px solid #e5e7eb' }}
-                        />
+                        <div>
+                            <img
+                                src={formData.second_image}
+                                alt="Second image preview"
+                                style={{ marginTop: '12px', maxWidth: '300px', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                            />
+                            <button
+                                type="button"
+                                onClick={handleRegenerateSecondImage}
+                                disabled={regenerating}
+                                style={{
+                                    marginTop: '12px',
+                                    padding: '8px 16px',
+                                    background: regenerating ? '#9ca3af' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    fontSize: '13px',
+                                    fontWeight: '600',
+                                    cursor: regenerating ? 'not-allowed' : 'pointer',
+                                    display: 'block'
+                                }}
+                            >
+                                {regenerating ? '🔄 Regenerating...' : '🎨 Regenerate Second Image'}
+                            </button>
+                        </div>
                     )}
                 </div>
 
@@ -324,25 +404,6 @@ export default function EditArticle({ params }) {
                         />
                     )}
                 </div>
-
-                <button
-                    type="button"
-                    onClick={handleRegenerateImages}
-                    disabled={regenerating}
-                    style={{
-                        padding: '12px 24px',
-                        background: regenerating ? '#9ca3af' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        cursor: regenerating ? 'not-allowed' : 'pointer',
-                        marginBottom: '24px'
-                    }}
-                >
-                    {regenerating ? '🔄 Regenerating Images...' : '🎨 Regenerate Hero & Second Images'}
-                </button>
 
                 <div className="form-group">
                     <label>Advertorial Label</label>
