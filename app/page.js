@@ -12,7 +12,7 @@ export default function Home() {
                 </section>
 
                 <section className="latest-articles">
-                    <h2 className="section-title">Latest Stories</h2>
+                    <h2 className="section-title">Latest Stories LENARD</h2>
                     <div className="article-grid">
                         {articles.map((article) => (
                             <Link href={`/${article.slug}`} key={article.slug} className="article-card">
