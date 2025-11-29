@@ -96,8 +96,8 @@ async function generateImage(prompt) {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: "gemini-3-pro-image-preview" });
 
-        // Enhanced prompt for photorealism
-        const enhancedPrompt = prompt + " raw photo, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, candid photography, no illustration, no 3d render, no cartoon, no cgi";
+        // Enhanced prompt for photorealism with Indian context
+        const enhancedPrompt = prompt + " Indian household, Indian people, South Asian setting, raw photo, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, candid photography, no illustration, no 3d render, no cartoon, no cgi";
 
         // Generate image
         const result = await model.generateContent({
@@ -138,7 +138,7 @@ async function generateImage(prompt) {
         try {
             const response = await openai.images.generate({
                 model: "dall-e-3",
-                prompt: prompt + " raw photo, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, candid photography, no illustration, no 3d render, no cartoon, no cgi",
+                prompt: prompt + " Indian household, Indian people, South Asian setting, raw photo, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, candid photography, no illustration, no 3d render, no cartoon, no cgi",
                 n: 1,
                 size: "1792x1024", // Landscape (closest to 4:3)
                 quality: "standard",
@@ -214,7 +214,11 @@ Generate a complete advertorial with:
    - Base the images on the hook's message and emotional tone
    - Make them visually striking and controversial if appropriate
    - Use dramatic lighting, close-ups, or before/after scenarios
-   - Examples: "dramatic close-up of shocked woman's face looking at messy kitchen", "split screen showing cluttered room vs pristine organized space"
+   - IMPORTANT: If showing people, specify "Indian household" or "Indian family"
+   - For before/after scenarios, reference the actual product: "${productData.title}"
+   - Examples: 
+     * "dramatic close-up of Indian woman's shocked face looking at messy kitchen counter with ${productData.title} in foreground"
+     * "split screen: left side shows cluttered Indian living room, right side shows same room pristine and organized with ${productData.title} visible"
    - Focus on evoking emotion and curiosity
 
 Also suggest:
@@ -302,6 +306,8 @@ IMPORTANT:
 - Hook paragraph must be plain text (NO asterisks or markdown formatting)
 - Image prompts must be DRAMATIC and based on the hook's emotional message
 - Make images attention-grabbing with dramatic lighting, close-ups, or striking scenarios
+- If showing people, specify "Indian household" or "Indian family"
+- For before/after scenarios, reference the product: "${productData.title}"
 
 Include 2 detailed DRAMATIC image prompts in the 'image_prompts' array that relate to the hook.
 Generate the same JSON structure as before with headline, hook, story, benefits, urgency box, comments (Hinglish), and CTA.`
