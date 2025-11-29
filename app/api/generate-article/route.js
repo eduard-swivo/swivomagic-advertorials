@@ -261,13 +261,14 @@ Generate a complete advertorial with:
 
 9. HERO IMAGE PROMPTS: Create 2 DRAMATIC, attention-grabbing image prompts that DIRECTLY relate to the selected ANGLE (${angle}).
    
-   **IMAGE 1 (HERO IMAGE) - PROBLEM ONLY:**
+   **IMAGE 1 (HERO IMAGE) - PROBLEM FOCUS:**
    - Follow the instruction: "${selectedAngleInstruction.split('Image 1: ')[1].split(' Image 2:')[0]}"
    - Make it relatable and dramatic
-   - **CRITICAL: DO NOT show ANY products, solutions, or cleaning items in Image 1**
-   - **CRITICAL: Focus ONLY on the problem, frustration, mess, or pain point**
+   ${angle === 'before-after'
+            ? '- **EXCEPTION: For Before & After angle, you MAY show a split screen with problem (left) and solution/product (right)**'
+            : '- **CRITICAL: DO NOT show ANY products, solutions, or cleaning items in Image 1**\n   - **CRITICAL: Focus ONLY on the problem, frustration, mess, or pain point**'}
    - Show the emotional impact of the problem (frustrated person, messy situation, etc.)
-   - Example: "Close-up of frustrated Indian woman looking at messy kitchen counter with spills and stains" (NO cleaning products visible)
+   ${angle !== 'before-after' ? '- Example: "Close-up of frustrated Indian woman looking at messy kitchen counter with spills and stains" (NO cleaning products visible)' : ''}
    
    **IMAGE 2 - SOLUTION/PRODUCT:**
    - Follow the instruction: "${selectedAngleInstruction.split('Image 2: ')[1]}"
