@@ -96,6 +96,17 @@ export default async function ArticlePage({ params }) {
                     </div>
                 )}
 
+                {/* Product Main Image */}
+                {article.product_main_image && (
+                    <div style={{ textAlign: 'center', margin: '24px 0' }}>
+                        <img
+                            src={article.product_main_image}
+                            alt="Product Offer"
+                            style={{ maxWidth: '100%', borderRadius: '8px' }}
+                        />
+                    </div>
+                )}
+
                 {/* CTA Button */}
                 <a href={article.cta_link} className="cta-button">
                     {article.cta_text}

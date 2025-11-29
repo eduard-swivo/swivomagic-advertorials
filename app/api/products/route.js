@@ -40,9 +40,24 @@ export async function POST(request) {
             processedImages = await Promise.all(uploadPromises);
         }
 
+        // Handle main_image upload
+        let mainImageUrl = data.main_image;
+        if (mainImageUrl && mainImageUrl.startsWith('data:image')) {
+            const base64Data = mainImageUrl.split(',')[1];
+            const buffer = Buffer.from(base64Data, 'base64');
+            const filename = `product-main-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+
+            const blob = await put(filename, buffer, {
+                access: 'public',
+                contentType: 'image/jpeg'
+            });
+            mainImageUrl = blob.url;
+        }
+
         const productData = {
             ...data,
-            images: processedImages
+            images: processedImages,
+            main_image: mainImageUrl
         };
 
         const product = await createProduct(productData);

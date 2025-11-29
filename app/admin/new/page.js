@@ -35,6 +35,7 @@ export default function NewArticle() {
         excerpt: '',
         hero_image: '',
         second_image: '',
+        product_main_image: '', // New field
         advertorial_label: '',
         hook: '',
         story: [''],
@@ -105,6 +106,10 @@ export default function NewArticle() {
                 setProductDescription(product.description || '');
                 if (product.images && product.images.length > 0) {
                     setProductImages(product.images);
+                }
+                // Auto-set main image if available
+                if (product.main_image) {
+                    setFormData(prev => ({ ...prev, product_main_image: product.main_image }));
                 }
             }
         } else {
@@ -1120,6 +1125,28 @@ export default function NewArticle() {
                     <button type="button" onClick={addComment} className="btn-add">
                         + Add Comment
                     </button>
+
+                    {/* Product Main Image */}
+                    <h2 style={{ marginTop: '40px', marginBottom: '24px', color: '#111' }}>Product Display</h2>
+                    <div className="form-group">
+                        <label>Product Main Image (Displayed before final CTA)</label>
+                        <input
+                            type="text"
+                            name="product_main_image"
+                            value={formData.product_main_image}
+                            onChange={handleChange}
+                            placeholder="Image URL (auto-filled from Product Profile)"
+                        />
+                        {formData.product_main_image && (
+                            <div style={{ marginTop: '10px' }}>
+                                <img
+                                    src={formData.product_main_image}
+                                    alt="Product Main"
+                                    style={{ width: '200px', borderRadius: '8px', border: '1px solid #ddd' }}
+                                />
+                            </div>
+                        )}
+                    </div>
 
                     {/* CTA */}
                     <h2 style={{ marginTop: '40px', marginBottom: '24px', color: '#111' }}>Call to Action</h2>

@@ -15,6 +15,7 @@ export default function ProductManager() {
         name: '',
         url: '',
         description: '',
+        main_image: '',
         images: []
     });
 
@@ -169,7 +170,53 @@ export default function ProductManager() {
                             </div>
 
                             <div className="form-group">
-                                <label>Product Images (Max 3)</label>
+                                <label>Product Main Image (For Article Display)</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            const reader = new FileReader();
+                                            reader.onloadend = () => {
+                                                setFormData(prev => ({ ...prev, main_image: reader.result }));
+                                            };
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }}
+                                />
+                                {formData.main_image && (
+                                    <div style={{ marginTop: '10px', position: 'relative', width: 'fit-content' }}>
+                                        <img
+                                            src={formData.main_image}
+                                            alt="Main Preview"
+                                            style={{ width: '200px', height: 'auto', borderRadius: '8px', border: '1px solid #ddd' }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, main_image: '' }))}
+                                            style={{
+                                                position: 'absolute',
+                                                top: -10,
+                                                right: -10,
+                                                background: 'red',
+                                                color: 'white',
+                                                borderRadius: '50%',
+                                                width: '24px',
+                                                height: '24px',
+                                                border: 'none',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                )}
+                                <small>This image will appear in the article between the urgency box and the final CTA.</small>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Product Reference Images (Max 3 - For AI Generation)</label>
                                 <input
                                     type="file"
                                     accept="image/*"
