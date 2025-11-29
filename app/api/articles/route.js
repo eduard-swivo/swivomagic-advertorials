@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAllArticles, createArticle } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 // GET all articles
 export async function GET() {
     try {
