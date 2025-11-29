@@ -84,20 +84,41 @@ async function scrapeProductPage(url) {
     }
 }
 
-// Generate image using DALL-E 3
+// Generate image using Google Imagen 3
 async function generateImage(prompt) {
     try {
-        const response = await openai.images.generate({
-            model: "dall-e-3",
-            prompt: prompt + " photorealistic, 4k, highly detailed, editorial photography style, natural lighting",
-            n: 1,
-            size: "1024x1024",
-            quality: "standard",
-        });
-        return response.data[0].url;
+        const apiKey = process.env.GOOGLE_API_KEY;
+        if (!apiKey) throw new Error('Google API Key is missing');
+
+        const response = await axios.post(
+            `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`,
+            {
+                instances: [{ prompt: prompt + " photorealistic, 4k, highly detailed, editorial photography style, natural lighting" }],
+                parameters: { sampleCount: 1 }
+            },
+            { headers: { 'Content-Type': 'application/json' } }
+        );
+
+        // Google returns base64 image
+        const base64Image = response.data.predictions[0].bytesBase64Encoded;
+        return `data:image/png;base64,${base64Image}`;
     } catch (error) {
-        console.error('Image generation error:', error);
-        return null;
+        console.error('Google Imagen generation error:', error.response?.data || error.message);
+        // Fallback to DALL-E 3 if Google fails
+        try {
+            console.log('Falling back to DALL-E 3...');
+            const response = await openai.images.generate({
+                model: "dall-e-3",
+                prompt: prompt + " photorealistic, 4k, highly detailed, editorial photography style, natural lighting",
+                n: 1,
+                size: "1024x1024",
+                quality: "standard",
+            });
+            return response.data[0].url;
+        } catch (dalleError) {
+            console.error('DALL-E 3 fallback error:', dalleError);
+            return null;
+        }
     }
 }
 

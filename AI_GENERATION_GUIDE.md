@@ -90,18 +90,17 @@ Your advertorial platform now has **AI-powered article generation** using OpenAI
 ## 🔑 Setup Requirements
 
 ### **Production (Vercel):**
-You need to add the OpenAI API key to Vercel:
+You need to add the API keys to Vercel:
 
 1. Go to Vercel Dashboard
 2. Settings → Environment Variables
-3. Add new variable:
-   - **Key:** `OPENAI_API_KEY`
-   - **Value:** `sk-proj-YOUR-KEY-HERE`
-   - **Environments:** All (Production, Preview, Development)
+3. Add new variables:
+   - **OPENAI_API_KEY**: `sk-proj-...` (for text)
+   - **GOOGLE_API_KEY**: `AIzaSy...` (for images)
 4. Save and redeploy
 
 ### **Local Development:**
-Already configured in `.env.local` (not committed to Git for security)
+Already configured in `.env.local`
 
 ---
 
