@@ -198,16 +198,25 @@ Generate a complete advertorial with:
 3. STORY (5-8 paragraphs): 
    - Start with a relatable problem/pain point
    - Build tension and frustration
-   - Introduce the "discovery" moment
+   - Introduce the "discovery" moment with a **BOLD SUBHEADING** (e.g., "**It was the Swivo Magic Cloth.**")
    - Show transformation
    - Use specific details and scenarios
    - Make it feel real and authentic
+   
+   **FORMATTING RULES FOR STORY:**
+   - Use **bold** for product names, key phrases, and dramatic reveals
+   - Use **bold subheadings** to break up the story (e.g., "**The Turning Point:**", "**Why This ₹699 Cloth Is Viral:**")
+   - Use *italics* for asides or parenthetical thoughts (e.g., *(Imagine a split screen here: Left: Common rag. Right: Swivo Magic finish.)*)
+   - Bold important numbers and prices (e.g., "**₹699**", "**5x its weight**")
+   - Keep paragraphs short (2-4 sentences max)
+   - Use conversational, punchy language
 
 4. BENEFITS (3-4 items):
-   - Each with a catchy title
+   - Each with a catchy, **BOLD** title (e.g., "**Reason #1: It's Not Toxic (But It Works)**")
    - Detailed description of the benefit
    - Use "could", "may", "might" for claims
    - Focus on transformation, not features
+   - Bold key phrases and product names in descriptions
 
 5. URGENCY BOX:
    - Title: Create FOMO

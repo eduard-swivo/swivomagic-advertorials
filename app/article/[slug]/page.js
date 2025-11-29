@@ -6,6 +6,19 @@ import { notFound } from 'next/navigation';
 
 import { getArticleBySlug } from '@/lib/db';
 
+// Helper function to parse simple Markdown (bold, italic)
+function parseMarkdown(text) {
+    if (!text) return '';
+
+    // Convert **bold** to <strong>
+    let html = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+    // Convert *italic* to <em> (but not if it's part of **)
+    html = html.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+
+    return html;
+}
+
 export default async function ArticlePage({ params }) {
     const article = await getArticleBySlug(params.slug);
 
@@ -40,7 +53,7 @@ export default async function ArticlePage({ params }) {
 
                 {/* Story Paragraphs */}
                 {story && story.map((paragraph, index) => (
-                    <p key={index}>{paragraph}</p>
+                    <p key={index} dangerouslySetInnerHTML={{ __html: parseMarkdown(paragraph) }} />
                 ))}
 
                 {/* Second Image (Solution) */}
@@ -59,8 +72,12 @@ export default async function ArticlePage({ params }) {
                         <h3>Why This Works:</h3>
                         {benefits.map((benefit, index) => (
                             <div key={index}>
-                                {benefit.title && <h4>{index + 1}. {benefit.title}</h4>}
-                                {benefit.description && <p>{benefit.description}</p>}
+                                {benefit.title && (
+                                    <h4 dangerouslySetInnerHTML={{ __html: parseMarkdown(benefit.title) }} />
+                                )}
+                                {benefit.description && (
+                                    <p dangerouslySetInnerHTML={{ __html: parseMarkdown(benefit.description) }} />
+                                )}
                             </div>
                         ))}
                     </>
