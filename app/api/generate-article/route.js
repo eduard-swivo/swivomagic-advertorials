@@ -87,7 +87,7 @@ async function scrapeProductPage(url) {
 }
 
 // Generate image using Google Gemini 3 Pro Image (Nano Banana Pro)
-async function generateImage(prompt, productDescription = '') {
+async function generateImage(prompt, productDescription = '', isImage1 = false) {
     try {
         const apiKey = process.env.GOOGLE_API_KEY;
         if (!apiKey) throw new Error('Google API Key is missing');
@@ -99,7 +99,13 @@ async function generateImage(prompt, productDescription = '') {
         // Enhanced prompt for photorealism with Indian context + Product Description Enforcement
         let enhancedPrompt = prompt + " Indian household, Indian people, South Asian setting, raw photo, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, candid photography, no illustration, no 3d render, no cartoon, no cgi";
 
-        if (productDescription) {
+        // AGGRESSIVE NEGATIVE PROMPTS for Image 1 (Problem-only images)
+        if (isImage1 || prompt.toLowerCase().includes('no product')) {
+            enhancedPrompt += ". CRITICAL EXCLUSIONS: absolutely no bottles, no spray bottles, no cleaning products, no containers, no packages, no labels, no branded items, no solutions, no detergents, no cleaners, no supplies, no items on shelves, no items on tables, no items on counters. Focus only on people and environment.";
+            console.log('🚫 Added aggressive negative prompts for Image 1');
+        }
+
+        if (productDescription && !isImage1) {
             enhancedPrompt += `. IMPORTANT PRODUCT DETAILS: ${productDescription}. Ensure the product in the image matches this description EXACTLY.`;
         }
 
@@ -571,9 +577,11 @@ Return ONLY a JSON array of 2 strings: ["prompt 1", "prompt 2"]`;
         }
     }
 
-    // Generate images in parallel
+    // Generate images in parallel with isImage1 flag
     if (articleData.image_prompts && articleData.image_prompts.length > 0) {
-        const imagePromises = articleData.image_prompts.map(prompt => generateImage(prompt, productDescription));
+        const imagePromises = articleData.image_prompts.map((prompt, index) =>
+            generateImage(prompt, productDescription, index === 0) // First image gets isImage1=true
+        );
         const images = await Promise.all(imagePromises);
         articleData.generated_images = images.filter(img => img !== null);
     }
