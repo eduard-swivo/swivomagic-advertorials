@@ -236,6 +236,7 @@ Generate a complete advertorial with:
    - Bold important numbers and prices (e.g., "**₹699**", "**5x its weight**")
    - Keep paragraphs short (2-4 sentences max)
    - Use conversational, punchy language
+   - **CRITICAL: NEVER use em dashes (—). Use regular hyphens (-) or commas instead.**
 
 5. BENEFITS (3-4 items):
    - Each with a catchy, **BOLD** title (e.g., "**Reason #1: It's Not Toxic (But It Works)**")
@@ -379,6 +380,7 @@ Create an advertorial that:
 IMPORTANT:
 - Generate a URL-friendly slug from the headline (lowercase, hyphens, 5-8 words max)
 - Hook paragraph must be plain text (NO asterisks or markdown formatting)
+- **CRITICAL: NEVER use em dashes (—) anywhere in the content. Use regular hyphens (-) or commas instead.**
 - Image prompts must follow the PROBLEM → SOLUTION structure:
   * IMAGE 1: Focus on the problem/pain point from the hook (NO product shown unless before/after)
   * IMAGE 2: Show the solution/transformation with the product
