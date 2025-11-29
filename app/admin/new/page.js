@@ -392,10 +392,28 @@ export default function NewArticle() {
                                 Click "Use as Hero" to instantly set an image as the article's hero image.
                             </p>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
-                                {generatedImages.map((url, i) => (
+                                {generatedImages.map((img, i) => (
                                     <div key={i} style={{ position: 'relative' }}>
+                                        {/* Engine Badge */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '8px',
+                                            right: '8px',
+                                            background: img.engine === 'google' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)',
+                                            color: img.engine === 'google' ? '#ea4335' : 'white',
+                                            padding: '4px 8px',
+                                            borderRadius: '12px',
+                                            fontSize: '11px',
+                                            fontWeight: '700',
+                                            zIndex: 10,
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                            border: img.engine === 'google' ? '1px solid #ea4335' : 'none'
+                                        }}>
+                                            {img.engine === 'google' ? '🍌 Google Imagen' : '🤖 DALL-E 3'}
+                                        </div>
+
                                         <img
-                                            src={url}
+                                            src={img.url}
                                             alt={`Generated ${i + 1}`}
                                             style={{
                                                 width: '100%',
@@ -407,7 +425,7 @@ export default function NewArticle() {
                                         <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData(prev => ({ ...prev, hero_image: url }))}
+                                                onClick={() => setFormData(prev => ({ ...prev, hero_image: img.url }))}
                                                 style={{
                                                     flex: 1,
                                                     padding: '8px',
@@ -425,7 +443,7 @@ export default function NewArticle() {
                                             <button
                                                 type="button"
                                                 onClick={() => {
-                                                    navigator.clipboard.writeText(url);
+                                                    navigator.clipboard.writeText(img.url);
                                                     alert('URL copied!');
                                                 }}
                                                 style={{

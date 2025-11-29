@@ -131,7 +131,7 @@ async function generateImage(prompt) {
             access: 'public',
         });
 
-        return blob.url;
+        return { url: blob.url, engine: 'google' };
 
     } catch (error) {
         console.error('Google Imagen generation error:', error.response?.data || error.message);
@@ -156,7 +156,7 @@ async function generateImage(prompt) {
                 access: 'public',
             });
 
-            return blob.url;
+            return { url: blob.url, engine: 'dalle' };
         } catch (dalleError) {
             console.error('DALL-E 3 fallback error:', dalleError);
             return null;
