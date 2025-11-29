@@ -490,16 +490,63 @@ Return ONLY valid JSON in this exact format:
 
     const articleData = JSON.parse(completion.choices[0].message.content);
 
-    // POST-PROCESSING: FORCE rewrite Image 1 to ensure NO products (Creative Mode)
-    // The AI keeps adding products despite instructions, so we ALWAYS override Image 1
-    if (articleData.image_prompts && articleData.image_prompts.length > 0) {
-        console.log('🔄 Original Image 1 prompt:', articleData.image_prompts[0]);
+    // POST-PROCESSING: Use regenerate API's proven approach for Image 1
+    // Instead of trusting the AI's image prompts, regenerate them using the working method
+    if (articleData.hook) {
+        console.log('🔄 Regenerating image prompts using proven method...');
 
-        // ALWAYS rewrite Image 1 to focus ONLY on the problem/danger
-        const problemFocusedPrompt = `Close-up of worried Indian family in their home, concerned expressions, looking at their surroundings with fear and uncertainty. Dimly lit room with subtle danger symbols (warning signs, toxic hazard icons) visible on walls or surfaces. Child looking unwell or coughing. Parents with protective, anxious body language. Dramatic lighting emphasizing the hidden threat. NO products, NO bottles, NO cleaning supplies, NO items on table visible. Photorealistic, emotional, Indian household setting.`;
+        try {
+            // Use the EXACT same approach as /api/regenerate-images which works perfectly
+            const imageSystemPrompt = `You are an expert art director. Create 2 distinct, dramatic image prompts based on the provided hook and product info.
+        
+STRUCTURE:
+- Image 1: THE PROBLEM (Pain point, frustration, mess - NO product)
+- Image 2: THE SOLUTION (Transformation, product in action, before/after)
 
-        articleData.image_prompts[0] = problemFocusedPrompt;
-        console.log('✅ Force-rewrote Image 1 to problem-only prompt');
+CONTEXT:
+- Product: ${productData.title}
+${productDescription ? `- Physical Description: "${productDescription}" (Adhere strictly to this)` : ''}
+- Setting: Indian household
+- Style: Photorealistic, dramatic lighting, candid
+
+${productMainImage ? 'IMPORTANT: You have seen the product main image. Describe the product accurately in Image 2.' : ''}
+
+Return ONLY a JSON array of 2 strings: ["prompt 1", "prompt 2"]`;
+
+            const imageUserPrompt = `HOOK: "${articleData.hook}"`;
+
+            const imageCompletion = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: imageSystemPrompt },
+                    { role: "user", content: imageUserPrompt }
+                ],
+                temperature: 0.9,
+                max_tokens: 500,
+            });
+
+            let regeneratedPrompts;
+            try {
+                regeneratedPrompts = JSON.parse(imageCompletion.choices[0].message.content);
+            } catch (e) {
+                // Fallback parsing
+                const content = imageCompletion.choices[0].message.content;
+                const match = content.match(/\[.*\]/s);
+                if (match) {
+                    regeneratedPrompts = JSON.parse(match[0]);
+                }
+            }
+
+            if (regeneratedPrompts && regeneratedPrompts.length >= 2) {
+                articleData.image_prompts = regeneratedPrompts;
+                console.log('✅ Successfully regenerated image prompts using proven method');
+                console.log('Image 1 (Problem):', regeneratedPrompts[0]);
+                console.log('Image 2 (Solution):', regeneratedPrompts[1]);
+            }
+        } catch (error) {
+            console.error('Error regenerating prompts:', error);
+            // Fall back to original prompts if regeneration fails
+        }
     }
 
     // Generate images in parallel
