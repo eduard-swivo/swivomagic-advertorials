@@ -179,6 +179,9 @@ Generate a complete advertorial with:
 1. HEADLINE: Aggressive, clickbaity, curiosity-driven (use numbers, questions, or shocking statements)
 
 2. HOOK PARAGRAPH: Bold opening that grabs attention and creates intrigue (will be displayed in bold)
+   - DO NOT use asterisks or markdown formatting
+   - Write in plain text only
+   - Make it dramatic and compelling
 
 3. STORY (5-8 paragraphs): 
    - Start with a relatable problem/pain point
@@ -207,7 +210,12 @@ Generate a complete advertorial with:
    - Examples: "Bhai, this is amazing", "Maine order kiya tha, delivery fast thi", "Iska price kya hai?"
    - Make them sound authentic and varied (some questions, some praise)
 
-8. SUPPORTING IMAGES: Create 2 distinct, detailed prompts for photorealistic images that would support this story (e.g., "close up of dirty vs clean window", "happy family in living room").
+8. HERO IMAGE PROMPTS: Create 2 DRAMATIC, attention-grabbing image prompts that DIRECTLY relate to the hook paragraph
+   - Base the images on the hook's message and emotional tone
+   - Make them visually striking and controversial if appropriate
+   - Use dramatic lighting, close-ups, or before/after scenarios
+   - Examples: "dramatic close-up of shocked woman's face looking at messy kitchen", "split screen showing cluttered room vs pristine organized space"
+   - Focus on evoking emotion and curiosity
 
 Also suggest:
 - CATEGORY: "Lifestyle" or "Health & Family"
@@ -290,7 +298,12 @@ Create an advertorial that:
 3. Maintains the same emotional tone
 4. Delivers on the ad's promise
 
-Include 2 detailed prompts for supporting images in the 'image_prompts' array.
+IMPORTANT:
+- Hook paragraph must be plain text (NO asterisks or markdown formatting)
+- Image prompts must be DRAMATIC and based on the hook's emotional message
+- Make images attention-grabbing with dramatic lighting, close-ups, or striking scenarios
+
+Include 2 detailed DRAMATIC image prompts in the 'image_prompts' array that relate to the hook.
 Generate the same JSON structure as before with headline, hook, story, benefits, urgency box, comments (Hinglish), and CTA.`
                     },
                     {
