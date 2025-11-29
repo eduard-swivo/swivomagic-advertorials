@@ -87,7 +87,7 @@ async function scrapeProductPage(url) {
 }
 
 // Generate image using Google Gemini 3 Pro Image (Nano Banana Pro)
-async function generateImage(prompt) {
+async function generateImage(prompt, productDescription = '') {
     try {
         const apiKey = process.env.GOOGLE_API_KEY;
         if (!apiKey) throw new Error('Google API Key is missing');
@@ -96,8 +96,12 @@ async function generateImage(prompt) {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: "gemini-3-pro-image-preview" });
 
-        // Enhanced prompt for photorealism with Indian context
-        const enhancedPrompt = prompt + " Indian household, Indian people, South Asian setting, raw photo, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, candid photography, no illustration, no 3d render, no cartoon, no cgi";
+        // Enhanced prompt for photorealism with Indian context + Product Description Enforcement
+        let enhancedPrompt = prompt + " Indian household, Indian people, South Asian setting, raw photo, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, candid photography, no illustration, no 3d render, no cartoon, no cgi";
+
+        if (productDescription) {
+            enhancedPrompt += `. IMPORTANT PRODUCT DETAILS: ${productDescription}. Ensure the product in the image matches this description EXACTLY.`;
+        }
 
         // Generate image
         const result = await model.generateContent({
@@ -337,7 +341,7 @@ Return ONLY valid JSON in this exact format:
 
     // Generate images in parallel
     if (articleData.image_prompts && articleData.image_prompts.length > 0) {
-        const imagePromises = articleData.image_prompts.map(prompt => generateImage(prompt));
+        const imagePromises = articleData.image_prompts.map(prompt => generateImage(prompt, productDescription));
         const images = await Promise.all(imagePromises);
         articleData.generated_images = images.filter(img => img !== null);
     }
@@ -346,7 +350,7 @@ Return ONLY valid JSON in this exact format:
 }
 
 // Generate article from ad creative
-async function generateFromAdCreative(imageUrl, productUrl) {
+async function generateFromAdCreative(imageUrl, productUrl, productDescription = null) {
     const productData = await scrapeProductPage(productUrl);
 
     const completion = await openai.chat.completions.create({
@@ -404,7 +408,7 @@ Generate the same JSON structure as before with headline, slug, hook, story, ben
 
     // Generate images in parallel
     if (articleData.image_prompts && articleData.image_prompts.length > 0) {
-        const imagePromises = articleData.image_prompts.map(prompt => generateImage(prompt));
+        const imagePromises = articleData.image_prompts.map(prompt => generateImage(prompt, productDescription));
         const images = await Promise.all(imagePromises);
         articleData.generated_images = images.filter(img => img !== null);
     }
@@ -437,7 +441,7 @@ export async function POST(request) {
                     { status: 400 }
                 );
             }
-            articleData = await generateFromAdCreative(imageUrl, productUrl);
+            articleData = await generateFromAdCreative(imageUrl, productUrl, productDescription);
         } else {
             return NextResponse.json(
                 { success: false, error: 'Invalid mode' },
