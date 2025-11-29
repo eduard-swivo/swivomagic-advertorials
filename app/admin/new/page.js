@@ -120,41 +120,52 @@ export default function NewArticle() {
     };
 
     const handleAIGenerate = async () => {
-        if (!productUrl) {
-            alert('Please enter a product URL');
+        if (generationMode === 'product' && !productUrl) {
+            alert('Please select a product first');
             return;
         }
-
-        if (aiMode === 'creative' && !imagePreview) {
-            alert('Please upload an ad creative image');
+        if (generationMode === 'creative' && !adImage) {
+            alert('Please upload an ad creative first');
             return;
         }
 
         setGenerating(true);
-        setProgressMessage('🔍 Analyzing product page...');
+        setGenerationStep('Initializing AI...');
 
         try {
-            setProgressMessage('✍️ Crafting your advertorial...');
+            let payload = {
+                mode: generationMode,
+                productUrl,
+                angle: selectedAngle // Pass the selected angle
+            };
 
+            if (generationMode === 'product') {
+                payload.productImages = productImages;
+                payload.productDescription = productDescription;
+            } else {
+                // Convert file to base64 for creative mode
+                const reader = new FileReader();
+                const base64Image = await new Promise((resolve) => {
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(adImage);
+                });
+                payload.imageUrl = base64Image;
+            }
+
+            setGenerationStep('Analyzing product & writing copy...');
             const res = await fetch('/api/generate-article', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    mode: aiMode,
-                    productUrl,
-                    productImages: productImages.length > 0 ? productImages : null,
-                    productDescription, // Pass physical description
-                    imageUrl: imagePreview || null
-                })
+                body: JSON.stringify(payload)
             });
 
-            setProgressMessage('🎨 Generating images...');
+            setGenerationStep('🎨 Generating images...');
 
             const data = await res.json();
 
             if (data.success) {
                 try {
-                    setProgressMessage('📝 Populating form...');
+                    setGenerationStep('📝 Populating form...');
 
                     // Extract generated images
                     const generatedImgs = data.article.generated_images || [];
@@ -674,6 +685,36 @@ export default function NewArticle() {
                                 )}
                             </div>
                         )}
+
+                        {/* Advertorial Angle Selector */}
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', fontWeight: '600', marginBottom: '12px', color: '#374151' }}>
+                                Select Advertorial Angle *
+                            </label>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px' }}>
+                                {angles.map((angle) => (
+                                    <div
+                                        key={angle.id}
+                                        onClick={() => setSelectedAngle(angle.id)}
+                                        style={{
+                                            padding: '12px',
+                                            border: `2px solid ${selectedAngle === angle.id ? '#10b981' : '#e5e7eb'}`,
+                                            borderRadius: '8px',
+                                            background: selectedAngle === angle.id ? '#ecfdf5' : 'white',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        <div style={{ fontWeight: '600', fontSize: '14px', color: selectedAngle === angle.id ? '#047857' : '#374151', marginBottom: '4px' }}>
+                                            {angle.label}
+                                        </div>
+                                        <div style={{ fontSize: '11px', color: '#6b7280', lineHeight: '1.2' }}>
+                                            {angle.description}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
 
                         {/* Generate Button */}
                         <button

@@ -163,7 +163,7 @@ async function generateImage(prompt) {
 
 // Generate article from product link
 // Generate article from product link
-async function generateFromProductLink(productUrl, productImages = null, productDescription = null) {
+async function generateFromProductLink(productUrl, productImages = null, productDescription = null, angle = 'before-after') {
     const productData = await scrapeProductPage(productUrl);
 
     // Build the prompt with product image context if available
@@ -177,6 +177,18 @@ async function generateFromProductLink(productUrl, productImages = null, product
         promptAddition += `\n\nPRODUCT IMAGES PROVIDED: You have access to ${productImages.length} product image(s). Use them to create more accurate image prompts that show the real product in before/after scenarios.`;
     }
 
+    // Angle Instructions
+    const angleInstructions = {
+        'in-use': "ANGLE: Product In Use. Focus on the MECHANISM and ACTION. The story should describe exactly how the product works. Image 1: Show the problem in action. Image 2: Show the product being used and working perfectly.",
+        'before': "ANGLE: The Before. Focus on the PAIN POINT and FRUSTRATION. The story should dwell on the struggle before finding the solution. Image 1: A dramatic, high-emotion shot of the problem (mess, pain, etc.). Image 2: The relief of finding the solution.",
+        'before-after': "ANGLE: Before & After. Focus on the TRANSFORMATION. The story should contrast the 'old way' vs the 'new way'. Image 1: Split screen showing the problem (left) and the result (right). Image 2: The product sitting next to the perfect result.",
+        'in-hand': "ANGLE: Product In Hand. Focus on the DISCOVERY and the OBJECT. The story should feel like a personal review of a new gadget. Image 1: Holding the product in hand, showing its size/quality. Image 2: The product in its environment.",
+        'story': "ANGLE: Story Related. Focus on the NARRATIVE and EMOTION. The story should be about a person (e.g., grandmother, busy mom) and their journey. Image 1: An emotional shot related to the story (e.g., tired mom). Image 2: Happy family/person using the product.",
+        'after': "ANGLE: The After. Focus on the RESULT and RELIEF. The story should start with the happy ending and explain how they got there. Image 1: The perfect, pristine result. Image 2: The person enjoying the result with the product nearby."
+    };
+
+    const selectedAngleInstruction = angleInstructions[angle] || angleInstructions['before-after'];
+
     const prompt = `Create a high-converting advertorial for this product:
 
 PRODUCT INFO:
@@ -185,6 +197,9 @@ PRODUCT INFO:
 - Description: ${productData.description}
 - Price: ${productData.price}
 - Additional context: ${productData.bodyText.substring(0, 500)}${promptAddition}
+
+GENERATION ANGLE: ${selectedAngleInstruction}
+(IMPORTANT: Follow this angle strictly for both the story narrative and the image prompts.)
 
 Generate a complete advertorial with:
 
@@ -239,28 +254,20 @@ Generate a complete advertorial with:
    - Make them sound authentic and varied (some questions, some praise)
    - TIMESTAMPS: Must be random DAYS apart (e.g., "2 days ago", "5 days ago", "1 week ago"), NOT minutes or hours.
 
-9. HERO IMAGE PROMPTS: Create 2 DRAMATIC, attention-grabbing image prompts that DIRECTLY relate to the hook paragraph
+9. HERO IMAGE PROMPTS: Create 2 DRAMATIC, attention-grabbing image prompts that DIRECTLY relate to the selected ANGLE (${angle}).
    
-   **IMAGE 1 - THE PROBLEM:**
-   - Focus ONLY on the problem/pain point mentioned in the hook
-   - DO NOT show the solution or product yet (unless it's a before/after split)
-   - Show the frustration, mess, or issue that the hook addresses
-   - Example: If hook mentions "sprays and wipes that leave residue", show messy counter with chemical bottles and dirty rags
+   **IMAGE 1 - PRIMARY ANGLE SHOT:**
+   - Follow the instruction: "${selectedAngleInstruction.split('Image 1: ')[1].split(' Image 2:')[0]}"
    - Make it relatable and dramatic
    
-   **IMAGE 2 - THE SOLUTION:**
-   - Show the transformation or the product in action
-   - Can be a before/after split screen
-   - Should reveal the solution and create desire
+   **IMAGE 2 - SECONDARY/SUPPORTING SHOT:**
+   - Follow the instruction: "${selectedAngleInstruction.split('Image 2: ')[1]}"
    - Reference the actual product: "${productData.title}"
    
    **GENERAL RULES:**
    - IMPORTANT: If showing people, specify "Indian household" or "Indian family"
    - Use dramatic lighting, close-ups, or striking scenarios
    ${productImages && productImages.length > 0 ? '- You have seen the product images, so describe the product accurately in the prompts' : ''}
-   - Examples: 
-     * IMAGE 1: "dramatic close-up of Indian woman's frustrated face looking at messy kitchen counter covered with chemical spray bottles and dirty rags, harsh lighting"
-     * IMAGE 2: "split screen: left side shows cluttered Indian living room, right side shows same room pristine and organized with ${productData.title} visible"
    - Focus on evoking emotion and curiosity
 
 Also suggest:
@@ -408,9 +415,9 @@ Generate the same JSON structure as before with headline, slug, hook, story, ben
 // API Route Handler
 export async function POST(request) {
     try {
-        const { mode, productUrl, productImages, productDescription, imageUrl } = await request.json();
+        const { mode, productUrl, productImages, productDescription, imageUrl, angle } = await request.json();
 
-        console.log('Generating article in mode:', mode);
+        console.log('Generating article in mode:', mode, 'with angle:', angle);
 
         if (!productUrl) {
             return NextResponse.json(
@@ -422,7 +429,7 @@ export async function POST(request) {
         let articleData;
 
         if (mode === 'product') {
-            articleData = await generateFromProductLink(productUrl, productImages, productDescription);
+            articleData = await generateFromProductLink(productUrl, productImages, productDescription, angle);
         } else if (mode === 'creative') {
             if (!imageUrl) {
                 return NextResponse.json(
