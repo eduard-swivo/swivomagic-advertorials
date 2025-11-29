@@ -162,13 +162,13 @@ async function generateImage(prompt) {
 }
 
 // Generate article from product link
-async function generateFromProductLink(productUrl, productImageUrl = null) {
+async function generateFromProductLink(productUrl, productImages = null) {
     const productData = await scrapeProductPage(productUrl);
 
     // Build the prompt with product image context if available
     let promptAddition = '';
-    if (productImageUrl) {
-        promptAddition = `\n\nPRODUCT IMAGE PROVIDED: You have access to the actual product image. Use it to create more accurate image prompts that show the real product in before/after scenarios.`;
+    if (productImages && productImages.length > 0) {
+        promptAddition = `\n\nPRODUCT IMAGES PROVIDED: You have access to ${productImages.length} product image(s). Use them to create more accurate image prompts that show the real product in before/after scenarios.`;
     }
 
     const prompt = `Create a high-converting advertorial for this product:
@@ -222,7 +222,7 @@ Generate a complete advertorial with:
    - Use dramatic lighting, close-ups, or before/after scenarios
    - IMPORTANT: If showing people, specify "Indian household" or "Indian family"
    - For before/after scenarios, reference the actual product: "${productData.title}"
-   ${productImageUrl ? '- You have seen the product image, so describe it accurately in the prompts' : ''}
+   ${productImages && productImages.length > 0 ? '- You have seen the product images, so describe the product accurately in the prompts' : ''}
    - Examples: 
      * "dramatic close-up of Indian woman's shocked face looking at messy kitchen counter with ${productData.title} in foreground"
      * "split screen: left side shows cluttered Indian living room, right side shows same room pristine and organized with ${productData.title} visible"
@@ -259,18 +259,25 @@ Return ONLY valid JSON in this exact format:
   "image_prompts": ["prompt 1", "prompt 2"]
 }`;
 
-    // If product image is provided, use vision model
+    // If product images are provided, use vision model
     const messages = [
         { role: "system", content: SYSTEM_PROMPT }
     ];
 
-    if (productImageUrl) {
+    if (productImages && productImages.length > 0) {
+        const contentParts = [{ type: "text", text: prompt }];
+
+        // Add all product images to the content
+        productImages.forEach(imageData => {
+            contentParts.push({
+                type: "image_url",
+                image_url: { url: imageData }
+            });
+        });
+
         messages.push({
             role: "user",
-            content: [
-                { type: "text", text: prompt },
-                { type: "image_url", image_url: { url: productImageUrl } }
-            ]
+            content: contentParts
         });
     } else {
         messages.push({ role: "user", content: prompt });
@@ -362,7 +369,7 @@ Generate the same JSON structure as before with headline, hook, story, benefits,
 // API Route Handler
 export async function POST(request) {
     try {
-        const { mode, productUrl, productImageUrl, imageUrl } = await request.json();
+        const { mode, productUrl, productImages, imageUrl } = await request.json();
 
         if (!productUrl) {
             return NextResponse.json(
@@ -374,7 +381,7 @@ export async function POST(request) {
         let articleData;
 
         if (mode === 'product') {
-            articleData = await generateFromProductLink(productUrl, productImageUrl);
+            articleData = await generateFromProductLink(productUrl, productImages);
         } else if (mode === 'creative') {
             if (!imageUrl) {
                 return NextResponse.json(

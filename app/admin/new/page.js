@@ -14,7 +14,7 @@ export default function NewArticle() {
 
     // AI inputs
     const [productUrl, setProductUrl] = useState('');
-    const [productImageUrl, setProductImageUrl] = useState(''); // Optional product image for better before/after
+    const [productImages, setProductImages] = useState([]); // Array of uploaded product images (max 3)
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
     const [generatedImages, setGeneratedImages] = useState([]); // Store DALL-E images
@@ -51,6 +51,30 @@ export default function NewArticle() {
         }
     };
 
+    const handleProductImagesUpload = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 3) {
+            alert('Maximum 3 product images allowed');
+            return;
+        }
+
+        const imagePromises = files.map(file => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            });
+        });
+
+        Promise.all(imagePromises).then(images => {
+            setProductImages(images);
+        });
+    };
+
+    const removeProductImage = (index) => {
+        setProductImages(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleAIGenerate = async () => {
         if (!productUrl) {
             alert('Please enter a product URL');
@@ -71,7 +95,7 @@ export default function NewArticle() {
                 body: JSON.stringify({
                     mode: aiMode,
                     productUrl,
-                    productImageUrl: productImageUrl || null,
+                    productImages: productImages.length > 0 ? productImages : null,
                     imageUrl: imagePreview || null
                 })
             });
@@ -324,16 +348,16 @@ export default function NewArticle() {
                             </small>
                         </div>
 
-                        {/* Optional Product Image URL */}
+                        {/* Product Images Upload (Max 3) */}
                         <div style={{ marginBottom: '16px' }}>
                             <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
-                                Product Image URL (Optional)
+                                Product Images (Optional, Max 3)
                             </label>
                             <input
-                                type="url"
-                                value={productImageUrl}
-                                onChange={(e) => setProductImageUrl(e.target.value)}
-                                placeholder="https://example.com/product-image.jpg"
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={handleProductImagesUpload}
                                 style={{
                                     width: '100%',
                                     padding: '12px',
@@ -343,22 +367,51 @@ export default function NewArticle() {
                                 }}
                             />
                             <small style={{ color: '#6b7280', fontSize: '13px' }}>
-                                📸 Provide a product image for more accurate before/after scenarios
+                                📸 Upload up to 3 product images for more accurate AI-generated visuals
                             </small>
-                            {productImageUrl && (
-                                <div style={{ marginTop: '12px' }}>
-                                    <img
-                                        src={productImageUrl}
-                                        alt="Product Preview"
-                                        style={{
-                                            maxWidth: '200px',
-                                            borderRadius: '8px',
-                                            border: '2px solid #e5e7eb'
-                                        }}
-                                        onError={(e) => {
-                                            e.target.style.display = 'none';
-                                        }}
-                                    />
+
+                            {productImages.length > 0 && (
+                                <div style={{
+                                    marginTop: '12px',
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(3, 1fr)',
+                                    gap: '12px'
+                                }}>
+                                    {productImages.map((img, index) => (
+                                        <div key={index} style={{ position: 'relative' }}>
+                                            <img
+                                                src={img}
+                                                alt={`Product ${index + 1}`}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '120px',
+                                                    objectFit: 'cover',
+                                                    borderRadius: '8px',
+                                                    border: '2px solid #e5e7eb'
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeProductImage(index)}
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: '4px',
+                                                    right: '4px',
+                                                    background: 'rgba(239, 68, 68, 0.9)',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '50%',
+                                                    width: '24px',
+                                                    height: '24px',
+                                                    cursor: 'pointer',
+                                                    fontSize: '14px',
+                                                    fontWeight: 'bold'
+                                                }}
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </div>
