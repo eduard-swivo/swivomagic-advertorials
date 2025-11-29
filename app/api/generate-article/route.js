@@ -490,6 +490,26 @@ Return ONLY valid JSON in this exact format:
 
     const articleData = JSON.parse(completion.choices[0].message.content);
 
+    // POST-PROCESSING: Ensure Image 1 prompt has NO products
+    if (articleData.image_prompts && articleData.image_prompts.length > 0) {
+        const image1Prompt = articleData.image_prompts[0];
+
+        // Check if Image 1 prompt contains product-related keywords
+        const productKeywords = ['bottle', 'product', 'cleaning', 'spray', 'container', 'package', 'label', 'brand', 'solution', 'detergent', 'cleaner'];
+        const hasProductReference = productKeywords.some(keyword => image1Prompt.toLowerCase().includes(keyword));
+
+        if (hasProductReference) {
+            console.warn('⚠️ Image 1 prompt contains product references. Rewriting...');
+            console.warn('Original prompt:', image1Prompt);
+
+            // Rewrite Image 1 to focus ONLY on the problem from the title
+            const problemFocusedPrompt = `Close-up of worried Indian family in their home, concerned expressions, looking at their surroundings with fear and uncertainty. Dimly lit room with subtle danger symbols (warning signs, toxic hazard icons) visible on walls or surfaces. Child looking unwell or coughing. Parents with protective, anxious body language. Dramatic lighting emphasizing the hidden threat. NO products, NO bottles, NO cleaning supplies visible. Photorealistic, emotional, Indian household setting.`;
+
+            articleData.image_prompts[0] = problemFocusedPrompt;
+            console.log('✅ Rewrote Image 1 prompt:', problemFocusedPrompt);
+        }
+    }
+
     // Generate images in parallel
     if (articleData.image_prompts && articleData.image_prompts.length > 0) {
         const imagePromises = articleData.image_prompts.map(prompt => generateImage(prompt, productDescription));
