@@ -68,6 +68,9 @@ export default function AdminDashboard() {
                     <button onClick={handleLogout} className="btn-secondary">
                         Logout
                     </button>
+                    <Link href="/admin/products" className="btn-secondary" style={{ background: '#059669', color: 'white' }}>
+                        📦 Manage Products
+                    </Link>
                     <Link href="/admin/new" className="btn-primary">
                         + New Article
                     </Link>
