@@ -10,6 +10,8 @@ export default function ProductManager() {
     const [showForm, setShowForm] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
+    const [editingId, setEditingId] = useState(null);
+
     // Form State
     const [formData, setFormData] = useState({
         name: '',
@@ -67,13 +69,29 @@ export default function ProductManager() {
         }));
     };
 
+    const handleEdit = (product) => {
+        setFormData({
+            name: product.name,
+            url: product.url,
+            description: product.description || '',
+            main_image: product.main_image || '',
+            images: product.images || []
+        });
+        setEditingId(product.id);
+        setShowForm(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
 
         try {
-            const res = await fetch('/api/products', {
-                method: 'POST',
+            const url = editingId ? `/api/products/${editingId}` : '/api/products';
+            const method = editingId ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
@@ -81,10 +99,16 @@ export default function ProductManager() {
             const data = await res.json();
 
             if (data.success) {
-                setProducts([data.product, ...products]);
+                if (editingId) {
+                    setProducts(products.map(p => p.id === editingId ? data.product : p));
+                    alert('Product updated successfully!');
+                } else {
+                    setProducts([data.product, ...products]);
+                    alert('Product saved successfully!');
+                }
                 setShowForm(false);
-                setFormData({ name: '', url: '', description: '', images: [] });
-                alert('Product saved successfully!');
+                setFormData({ name: '', url: '', description: '', main_image: '', images: [] });
+                setEditingId(null);
             } else {
                 alert('Error saving product: ' + data.error);
             }
@@ -120,7 +144,13 @@ export default function ProductManager() {
                     <Link href="/admin" className="back-link">← Back to Dashboard</Link>
                     <h1>📦 Product Manager</h1>
                     <button
-                        onClick={() => setShowForm(!showForm)}
+                        onClick={() => {
+                            setShowForm(!showForm);
+                            if (!showForm) {
+                                setEditingId(null);
+                                setFormData({ name: '', url: '', description: '', main_image: '', images: [] });
+                            }
+                        }}
                         className="btn-primary"
                         style={{ background: showForm ? '#ef4444' : '#2563eb' }}
                     >
@@ -132,7 +162,7 @@ export default function ProductManager() {
             <div className="content-wrapper">
                 {showForm && (
                     <div className="form-container" style={{ marginBottom: '40px', border: '2px solid #bfdbfe' }}>
-                        <h2 style={{ marginBottom: '20px' }}>Add New Product</h2>
+                        <h2 style={{ marginBottom: '20px' }}>{editingId ? 'Edit Product' : 'Add New Product'}</h2>
                         <form onSubmit={handleSubmit}>
                             <div className="form-group">
                                 <label>Product Name *</label>
@@ -264,7 +294,7 @@ export default function ProductManager() {
                                 disabled={submitting}
                                 style={{ width: '100%', marginTop: '20px' }}
                             >
-                                {submitting ? 'Saving...' : 'Save Product Profile'}
+                                {submitting ? 'Saving...' : (editingId ? 'Update Product' : 'Save Product Profile')}
                             </button>
                         </form>
                     </div>
@@ -278,13 +308,22 @@ export default function ProductManager() {
                             <div key={product.id} className="article-card" style={{ padding: '20px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '10px' }}>
                                     <h3 style={{ margin: 0 }}>{product.name}</h3>
-                                    <button
-                                        onClick={() => handleDelete(product.id)}
-                                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px' }}
-                                        title="Delete"
-                                    >
-                                        🗑️
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button
+                                            onClick={() => handleEdit(product)}
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px' }}
+                                            title="Edit"
+                                        >
+                                            ✏️
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(product.id)}
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px' }}
+                                            title="Delete"
+                                        >
+                                            🗑️
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div style={{ display: 'flex', gap: '5px', marginBottom: '15px' }}>
