@@ -11,6 +11,7 @@ export default function NewArticle() {
     const [aiMode, setAiMode] = useState('product'); // 'product' or 'creative'
     const [loading, setLoading] = useState(false);
     const [generating, setGenerating] = useState(false);
+    const [progressMessage, setProgressMessage] = useState(''); // For modal progress updates
 
     // AI inputs
     const [savedProducts, setSavedProducts] = useState([]);
@@ -123,8 +124,11 @@ export default function NewArticle() {
         }
 
         setGenerating(true);
+        setProgressMessage('🔍 Analyzing product page...');
 
         try {
+            setProgressMessage('✍️ Crafting your advertorial...');
+
             const res = await fetch('/api/generate-article', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -137,10 +141,14 @@ export default function NewArticle() {
                 })
             });
 
+            setProgressMessage('🎨 Generating images...');
+
             const data = await res.json();
 
             if (data.success) {
                 try {
+                    setProgressMessage('📝 Populating form...');
+
                     // Extract generated images
                     const generatedImgs = data.article.generated_images || [];
 
@@ -184,6 +192,7 @@ export default function NewArticle() {
             alert('Failed to generate article. Please try again.');
         } finally {
             setGenerating(false);
+            setProgressMessage('');
         }
     };
 
@@ -327,6 +336,69 @@ export default function NewArticle() {
 
     return (
         <div className="admin-container">
+            {/* Progress Modal */}
+            {generating && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.7)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 9999
+                }}>
+                    <div style={{
+                        background: 'white',
+                        padding: '40px',
+                        borderRadius: '16px',
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                        textAlign: 'center',
+                        maxWidth: '400px',
+                        width: '90%'
+                    }}>
+                        {/* Spinner */}
+                        <div style={{
+                            width: '60px',
+                            height: '60px',
+                            border: '4px solid #f3f4f6',
+                            borderTop: '4px solid #667eea',
+                            borderRadius: '50%',
+                            animation: 'spin 1s linear infinite',
+                            margin: '0 auto 24px'
+                        }} />
+
+                        {/* Progress Message */}
+                        <h3 style={{
+                            fontSize: '20px',
+                            fontWeight: '600',
+                            color: '#111',
+                            marginBottom: '12px'
+                        }}>
+                            {progressMessage || '⏳ Generating...'}
+                        </h3>
+
+                        <p style={{
+                            color: '#6b7280',
+                            fontSize: '14px',
+                            lineHeight: '1.6'
+                        }}>
+                            This may take 30-60 seconds. Please don't close this window.
+                        </p>
+
+                        {/* CSS Animation */}
+                        <style jsx>{`
+                            @keyframes spin {
+                                0% { transform: rotate(0deg); }
+                                100% { transform: rotate(360deg); }
+                            }
+                        `}</style>
+                    </div>
+                </div>
+            )}
+
             <div className="admin-header">
                 <h1>Create New Article</h1>
                 <Link href="/admin" className="btn-secondary">
@@ -635,181 +707,7 @@ export default function NewArticle() {
             {/* Manual Form (shown when mode is manual or after AI generation) */}
             {mode === 'manual' && (
                 <form onSubmit={handleSubmit} className="form-container">
-                    {/* Generated Images Gallery */}
-                    {generatedImages.length > 0 && (
-                        <div style={{
-                            background: '#f0fdf4',
-                            padding: '24px',
-                            borderRadius: '12px',
-                            marginBottom: '32px',
-                            border: '2px solid #bbf7d0'
-                        }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                                <h3 style={{ color: '#166534', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                                    🎨 AI Generated Images
-                                </h3>
-                                <button
-                                    type="button"
-                                    onClick={handleRegenerateImages}
-                                    disabled={generating}
-                                    style={{
-                                        padding: '8px 16px',
-                                        background: generating ? '#9ca3af' : '#166534',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        cursor: generating ? 'not-allowed' : 'pointer',
-                                        fontSize: '13px',
-                                        fontWeight: '600'
-                                    }}
-                                >
-                                    {generating ? '🔄 Regenerating...' : '🔄 Regenerate Images'}
-                                </button>
-                            </div>
 
-                            <p style={{ marginBottom: '16px', color: '#15803d', fontSize: '14px' }}>
-                                <strong>Images are automatically saved to Vercel Blob!</strong>
-                            </p>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
-                                {/* Image 1: Problem */}
-                                {generatedImages[0] && (
-                                    <div style={{ position: 'relative' }}>
-                                        <div style={{ marginBottom: '8px', fontWeight: 'bold', color: '#166534' }}>
-                                            Image 1: The Problem (Hero)
-                                            {generatedImages[0].engine && (
-                                                <span style={{
-                                                    marginLeft: '8px',
-                                                    fontSize: '10px',
-                                                    padding: '2px 6px',
-                                                    borderRadius: '4px',
-                                                    background: generatedImages[0].engine === 'google' ? '#FEF08A' : '#DBEAFE',
-                                                    color: generatedImages[0].engine === 'google' ? '#854D0E' : '#1E40AF',
-                                                    border: '1px solid rgba(0,0,0,0.1)'
-                                                }}>
-                                                    {generatedImages[0].engine === 'google' ? '🍌 Google Imagen' : '🤖 DALL-E 3'}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <img
-                                            src={generatedImages[0].url || generatedImages[0]}
-                                            alt="Problem"
-                                            style={{
-                                                width: '100%',
-                                                borderRadius: '8px',
-                                                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                                                border: '1px solid #bbf7d0'
-                                            }}
-                                        />
-                                        <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormData(prev => ({ ...prev, hero_image: generatedImages[0].url || generatedImages[0] }))}
-                                                style={{
-                                                    flex: 1,
-                                                    padding: '8px',
-                                                    background: '#166534',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '6px',
-                                                    fontSize: '13px',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                Set as Hero Image
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    navigator.clipboard.writeText(generatedImages[0].url || generatedImages[0]);
-                                                    alert('URL copied!');
-                                                }}
-                                                style={{
-                                                    padding: '8px',
-                                                    background: 'white',
-                                                    color: '#166534',
-                                                    border: '1px solid #166534',
-                                                    borderRadius: '6px',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                Copy URL
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Image 2: Solution */}
-                                {generatedImages[1] && (
-                                    <div style={{ position: 'relative' }}>
-                                        <div style={{ marginBottom: '8px', fontWeight: 'bold', color: '#166534' }}>
-                                            Image 2: The Solution (Body)
-                                            {generatedImages[1].engine && (
-                                                <span style={{
-                                                    marginLeft: '8px',
-                                                    fontSize: '10px',
-                                                    padding: '2px 6px',
-                                                    borderRadius: '4px',
-                                                    background: generatedImages[1].engine === 'google' ? '#FEF08A' : '#DBEAFE',
-                                                    color: generatedImages[1].engine === 'google' ? '#854D0E' : '#1E40AF',
-                                                    border: '1px solid rgba(0,0,0,0.1)'
-                                                }}>
-                                                    {generatedImages[1].engine === 'google' ? '🍌 Google Imagen' : '🤖 DALL-E 3'}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <img
-                                            src={generatedImages[1].url || generatedImages[1]}
-                                            alt="Solution"
-                                            style={{
-                                                width: '100%',
-                                                borderRadius: '8px',
-                                                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                                                border: '1px solid #bbf7d0'
-                                            }}
-                                        />
-                                        <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormData(prev => ({ ...prev, second_image: generatedImages[1].url || generatedImages[1] }))}
-                                                style={{
-                                                    flex: 1,
-                                                    padding: '8px',
-                                                    background: '#15803d',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '6px',
-                                                    fontSize: '13px',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                Set as Second Image
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    navigator.clipboard.writeText(generatedImages[1].url || generatedImages[1]);
-                                                    alert('URL copied!');
-                                                }}
-                                                style={{
-                                                    padding: '8px',
-                                                    background: 'white',
-                                                    color: '#15803d',
-                                                    border: '1px solid #15803d',
-                                                    borderRadius: '6px',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                Copy URL
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
 
                     {/* Rest of the manual form - keeping all the existing fields */}
                     <h2 style={{ marginBottom: '24px', color: '#111' }}>Basic Information</h2>
