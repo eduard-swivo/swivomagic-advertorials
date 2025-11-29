@@ -217,15 +217,27 @@ Generate a complete advertorial with:
    - Make them sound authentic and varied (some questions, some praise)
 
 8. HERO IMAGE PROMPTS: Create 2 DRAMATIC, attention-grabbing image prompts that DIRECTLY relate to the hook paragraph
-   - Base the images on the hook's message and emotional tone
-   - Make them visually striking and controversial if appropriate
-   - Use dramatic lighting, close-ups, or before/after scenarios
+   
+   **IMAGE 1 - THE PROBLEM:**
+   - Focus ONLY on the problem/pain point mentioned in the hook
+   - DO NOT show the solution or product yet (unless it's a before/after split)
+   - Show the frustration, mess, or issue that the hook addresses
+   - Example: If hook mentions "sprays and wipes that leave residue", show messy counter with chemical bottles and dirty rags
+   - Make it relatable and dramatic
+   
+   **IMAGE 2 - THE SOLUTION:**
+   - Show the transformation or the product in action
+   - Can be a before/after split screen
+   - Should reveal the solution and create desire
+   - Reference the actual product: "${productData.title}"
+   
+   **GENERAL RULES:**
    - IMPORTANT: If showing people, specify "Indian household" or "Indian family"
-   - For before/after scenarios, reference the actual product: "${productData.title}"
+   - Use dramatic lighting, close-ups, or striking scenarios
    ${productImages && productImages.length > 0 ? '- You have seen the product images, so describe the product accurately in the prompts' : ''}
    - Examples: 
-     * "dramatic close-up of Indian woman's shocked face looking at messy kitchen counter with ${productData.title} in foreground"
-     * "split screen: left side shows cluttered Indian living room, right side shows same room pristine and organized with ${productData.title} visible"
+     * IMAGE 1: "dramatic close-up of Indian woman's frustrated face looking at messy kitchen counter covered with chemical spray bottles and dirty rags, harsh lighting"
+     * IMAGE 2: "split screen: left side shows cluttered Indian living room, right side shows same room pristine and organized with ${productData.title} visible"
    - Focus on evoking emotion and curiosity
 
 Also suggest:
@@ -332,7 +344,9 @@ Create an advertorial that:
 
 IMPORTANT:
 - Hook paragraph must be plain text (NO asterisks or markdown formatting)
-- Image prompts must be DRAMATIC and based on the hook's emotional message
+- Image prompts must follow the PROBLEM → SOLUTION structure:
+  * IMAGE 1: Focus on the problem/pain point from the hook (NO product shown unless before/after)
+  * IMAGE 2: Show the solution/transformation with the product
 - Make images attention-grabbing with dramatic lighting, close-ups, or striking scenarios
 - If showing people, specify "Indian household" or "Indian family"
 - For before/after scenarios, reference the product: "${productData.title}"
