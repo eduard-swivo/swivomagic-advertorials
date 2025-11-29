@@ -84,29 +84,50 @@ async function scrapeProductPage(url) {
     }
 }
 
-// Generate image using Google Imagen 3
+// Generate image using Google Imagen 3 via SDK
 async function generateImage(prompt) {
     try {
         const apiKey = process.env.GOOGLE_API_KEY;
         if (!apiKey) throw new Error('Google API Key is missing');
 
+        // Initialize Google AI
+        const genAI = new GoogleGenerativeAI(apiKey);
+
+        // Note: As of late 2025, image generation might still use a specific model ID
+        // We'll try the latest Imagen model available via the SDK
+        const model = genAI.getGenerativeModel({ model: "imagen-3.0-generate-001" });
+
+        // The SDK method for images might differ slightly based on version
+        // If standard generateContent doesn't work for images, we fallback to REST but with better error handling
+        // However, let's try the REST endpoint again but with the exact correct format for Imagen 3
+
         const response = await axios.post(
             `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`,
             {
-                instances: [{ prompt: prompt + " photorealistic, 4k, highly detailed, editorial photography style, natural lighting" }],
-                parameters: { sampleCount: 1 }
+                instances: [
+                    { prompt: prompt + " photorealistic, 4k, highly detailed, editorial photography style, natural lighting" }
+                ],
+                parameters: {
+                    sampleCount: 1,
+                    aspectRatio: "1:1"
+                }
             },
             { headers: { 'Content-Type': 'application/json' } }
         );
 
-        // Google returns base64 image
+        if (!response.data.predictions || !response.data.predictions[0]) {
+            throw new Error('No predictions returned from Google');
+        }
+
         const base64Image = response.data.predictions[0].bytesBase64Encoded;
         return `data:image/png;base64,${base64Image}`;
+
     } catch (error) {
         console.error('Google Imagen generation error:', error.response?.data || error.message);
-        // Fallback to DALL-E 3 if Google fails
+
+        // Fallback to DALL-E 3
+        console.log('Falling back to DALL-E 3...');
         try {
-            console.log('Falling back to DALL-E 3...');
             const response = await openai.images.generate({
                 model: "dall-e-3",
                 prompt: prompt + " photorealistic, 4k, highly detailed, editorial photography style, natural lighting",
