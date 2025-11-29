@@ -140,20 +140,42 @@ export default function NewArticle() {
             const data = await res.json();
 
             if (data.success) {
-                // Populate form with AI-generated content
-                setFormData({
-                    ...formData,
-                    ...data.article,
-                    hero_image: '/images/placeholder.jpg' // User will need to upload
-                });
+                try {
+                    // Extract generated images
+                    const generatedImgs = data.article.generated_images || [];
 
-                // Show generated images if available
-                if (data.article.generated_images && data.article.generated_images.length > 0) {
-                    setGeneratedImages(data.article.generated_images);
+                    // Populate form with AI-generated content
+                    setFormData(prev => ({
+                        ...prev,
+                        title: data.article.title || '',
+                        slug: data.article.slug || '',
+                        category: data.article.category || 'Lifestyle',
+                        author: data.article.author || '',
+                        advertorial_label: data.article.advertorial_label || '',
+                        excerpt: data.article.excerpt || '',
+                        hook: data.article.hook || '',
+                        story: Array.isArray(data.article.story)
+                            ? data.article.story
+                            : (typeof data.article.story === 'string' ? [data.article.story] : ['']),
+                        benefits: Array.isArray(data.article.benefits) ? data.article.benefits : [{ title: '', description: '' }],
+                        urgency_box: data.article.urgency_box || { title: '', text: '' },
+                        comments: Array.isArray(data.article.comments) ? data.article.comments : [],
+                        cta_text: data.article.cta_text || 'CHECK AVAILABILITY >>',
+                        hero_image: generatedImgs[0]?.url || generatedImgs[0] || '',
+                        second_image: generatedImgs[1]?.url || generatedImgs[1] || ''
+                    }));
+
+                    // Show generated images if available
+                    if (generatedImgs.length > 0) {
+                        setGeneratedImages(generatedImgs);
+                    }
+
+                    setMode('manual'); // Switch to manual mode to review/edit
+                    alert('✨ Article generated! Review and adjust as needed, then save.');
+                } catch (err) {
+                    console.error('Error populating form:', err);
+                    alert('Article generated but there was an error displaying it. Check console for details.');
                 }
-
-                setMode('manual'); // Switch to manual mode to review/edit
-                alert('✨ Article generated! Review and adjust as needed, then save.');
             } else {
                 alert('Error: ' + data.error);
             }
