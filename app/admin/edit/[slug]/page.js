@@ -9,6 +9,7 @@ export default function EditArticle({ params }) {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [regenerating, setRegenerating] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
         slug: '',
@@ -17,6 +18,8 @@ export default function EditArticle({ params }) {
         published_date: '',
         excerpt: '',
         hero_image: '',
+        second_image: '',
+        product_main_image: '',
         advertorial_label: '',
         hook: '',
         story: [''],
@@ -46,6 +49,8 @@ export default function EditArticle({ params }) {
                     published_date: article.published_date || '',
                     excerpt: article.excerpt || '',
                     hero_image: article.hero_image || '',
+                    second_image: article.second_image || '',
+                    product_main_image: article.product_main_image || '',
                     advertorial_label: article.advertorial_label || '',
                     hook: article.hook || '',
                     story: typeof article.story === 'string' ? JSON.parse(article.story) : (article.story || ['']),
@@ -139,6 +144,44 @@ export default function EditArticle({ params }) {
         }
     };
 
+    const handleRegenerateImages = async () => {
+        if (!formData.hook) {
+            alert('Hook paragraph is required to regenerate images');
+            return;
+        }
+
+        setRegenerating(true);
+        try {
+            const res = await fetch('/api/regenerate-images', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    hook: formData.hook,
+                    productUrl: formData.cta_link,
+                    productTitle: formData.title
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.success && data.images) {
+                setFormData(prev => ({
+                    ...prev,
+                    hero_image: data.images[0]?.url || prev.hero_image,
+                    second_image: data.images[1]?.url || prev.second_image
+                }));
+                alert('Images regenerated successfully!');
+            } else {
+                alert('Error regenerating images: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to regenerate images');
+        } finally {
+            setRegenerating(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="admin-container">
@@ -227,8 +270,11 @@ export default function EditArticle({ params }) {
                     />
                 </div>
 
+                {/* Images Section */}
+                <h2 style={{ marginTop: '40px', marginBottom: '24px', color: '#111' }}>Article Images</h2>
+
                 <div className="form-group">
-                    <label>Hero Image URL *</label>
+                    <label>Hero Image URL (Image 1) *</label>
                     <input
                         type="text"
                         name="hero_image"
@@ -236,7 +282,67 @@ export default function EditArticle({ params }) {
                         onChange={handleChange}
                         required
                     />
+                    {formData.hero_image && (
+                        <img
+                            src={formData.hero_image}
+                            alt="Hero preview"
+                            style={{ marginTop: '12px', maxWidth: '300px', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                        />
+                    )}
                 </div>
+
+                <div className="form-group">
+                    <label>Second Image URL (Image 2)</label>
+                    <input
+                        type="text"
+                        name="second_image"
+                        value={formData.second_image}
+                        onChange={handleChange}
+                    />
+                    {formData.second_image && (
+                        <img
+                            src={formData.second_image}
+                            alt="Second image preview"
+                            style={{ marginTop: '12px', maxWidth: '300px', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                        />
+                    )}
+                </div>
+
+                <div className="form-group">
+                    <label>Product Main Image URL</label>
+                    <input
+                        type="text"
+                        name="product_main_image"
+                        value={formData.product_main_image}
+                        onChange={handleChange}
+                    />
+                    {formData.product_main_image && (
+                        <img
+                            src={formData.product_main_image}
+                            alt="Product main image preview"
+                            style={{ marginTop: '12px', maxWidth: '300px', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                        />
+                    )}
+                </div>
+
+                <button
+                    type="button"
+                    onClick={handleRegenerateImages}
+                    disabled={regenerating}
+                    style={{
+                        padding: '12px 24px',
+                        background: regenerating ? '#9ca3af' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: regenerating ? 'not-allowed' : 'pointer',
+                        marginBottom: '24px'
+                    }}
+                >
+                    {regenerating ? '🔄 Regenerating Images...' : '🎨 Regenerate Hero & Second Images'}
+                </button>
 
                 <div className="form-group">
                     <label>Advertorial Label</label>
