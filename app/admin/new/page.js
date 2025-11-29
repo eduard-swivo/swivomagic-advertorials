@@ -11,6 +11,8 @@ export default function NewArticle() {
     const [aiMode, setAiMode] = useState('product'); // 'product' or 'creative'
     const [loading, setLoading] = useState(false);
     const [generating, setGenerating] = useState(false);
+    const [regeneratingHero, setRegeneratingHero] = useState(false);
+    const [regeneratingSecond, setRegeneratingSecond] = useState(false);
     const [progressMessage, setProgressMessage] = useState(''); // For modal progress updates
 
     // AI inputs
@@ -168,6 +170,7 @@ export default function NewArticle() {
                         benefits: Array.isArray(data.article.benefits) ? data.article.benefits : [{ title: '', description: '' }],
                         urgency_box: data.article.urgency_box || { title: '', text: '' },
                         comments: Array.isArray(data.article.comments) ? data.article.comments : [],
+                        cta_link: productUrl || '', // Use product URL as CTA link
                         cta_text: data.article.cta_text || 'CHECK AVAILABILITY >>',
                         hero_image: generatedImgs[0]?.url || generatedImgs[0] || '',
                         second_image: generatedImgs[1]?.url || generatedImgs[1] || ''
@@ -822,7 +825,7 @@ export default function NewArticle() {
                                                 alert('Please generate the article first to have a hook for image generation.');
                                                 return;
                                             }
-                                            setGenerating(true);
+                                            setRegeneratingHero(true);
                                             try {
                                                 const res = await fetch('/api/regenerate-images', {
                                                     method: 'POST',
@@ -844,22 +847,22 @@ export default function NewArticle() {
                                                 console.error('Error:', error);
                                                 alert('Failed to regenerate image');
                                             } finally {
-                                                setGenerating(false);
+                                                setRegeneratingHero(false);
                                             }
                                         }}
-                                        disabled={generating}
+                                        disabled={regeneratingHero}
                                         style={{
                                             padding: '6px 12px',
-                                            background: generating ? '#9ca3af' : '#3b82f6',
+                                            background: regeneratingHero ? '#9ca3af' : '#3b82f6',
                                             color: 'white',
                                             border: 'none',
                                             borderRadius: '6px',
                                             fontSize: '12px',
-                                            cursor: generating ? 'not-allowed' : 'pointer',
+                                            cursor: regeneratingHero ? 'not-allowed' : 'pointer',
                                             fontWeight: '600'
                                         }}
                                     >
-                                        {generating ? '🔄 Regenerating...' : '🔄 Regenerate'}
+                                        {regeneratingHero ? '🔄 Regenerating...' : '🔄 Regenerate'}
                                     </button>
                                 </div>
                             )}
@@ -899,7 +902,7 @@ export default function NewArticle() {
                                                 alert('Please generate the article first to have a hook for image generation.');
                                                 return;
                                             }
-                                            setGenerating(true);
+                                            setRegeneratingSecond(true);
                                             try {
                                                 const res = await fetch('/api/regenerate-images', {
                                                     method: 'POST',
@@ -921,22 +924,22 @@ export default function NewArticle() {
                                                 console.error('Error:', error);
                                                 alert('Failed to regenerate image');
                                             } finally {
-                                                setGenerating(false);
+                                                setRegeneratingSecond(false);
                                             }
                                         }}
-                                        disabled={generating}
+                                        disabled={regeneratingSecond}
                                         style={{
                                             padding: '6px 12px',
-                                            background: generating ? '#9ca3af' : '#10b981',
+                                            background: regeneratingSecond ? '#9ca3af' : '#10b981',
                                             color: 'white',
                                             border: 'none',
                                             borderRadius: '6px',
                                             fontSize: '12px',
-                                            cursor: generating ? 'not-allowed' : 'pointer',
+                                            cursor: regeneratingSecond ? 'not-allowed' : 'pointer',
                                             fontWeight: '600'
                                         }}
                                     >
-                                        {generating ? '🔄 Regenerating...' : '🔄 Regenerate'}
+                                        {regeneratingSecond ? '🔄 Regenerating...' : '🔄 Regenerate'}
                                     </button>
                                 </div>
                             )}
