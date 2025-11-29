@@ -14,6 +14,7 @@ export default function NewArticle() {
 
     // AI inputs
     const [productUrl, setProductUrl] = useState('');
+    const [productImageUrl, setProductImageUrl] = useState(''); // Optional product image for better before/after
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
     const [generatedImages, setGeneratedImages] = useState([]); // Store DALL-E images
@@ -70,6 +71,7 @@ export default function NewArticle() {
                 body: JSON.stringify({
                     mode: aiMode,
                     productUrl,
+                    productImageUrl: productImageUrl || null,
                     imageUrl: imagePreview || null
                 })
             });
@@ -320,6 +322,45 @@ export default function NewArticle() {
                             <small style={{ color: '#6b7280', fontSize: '13px' }}>
                                 This will be used as the CTA link in the article
                             </small>
+                        </div>
+
+                        {/* Optional Product Image URL */}
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
+                                Product Image URL (Optional)
+                            </label>
+                            <input
+                                type="url"
+                                value={productImageUrl}
+                                onChange={(e) => setProductImageUrl(e.target.value)}
+                                placeholder="https://example.com/product-image.jpg"
+                                style={{
+                                    width: '100%',
+                                    padding: '12px',
+                                    border: '2px solid #e5e7eb',
+                                    borderRadius: '8px',
+                                    fontSize: '14px'
+                                }}
+                            />
+                            <small style={{ color: '#6b7280', fontSize: '13px' }}>
+                                📸 Provide a product image for more accurate before/after scenarios
+                            </small>
+                            {productImageUrl && (
+                                <div style={{ marginTop: '12px' }}>
+                                    <img
+                                        src={productImageUrl}
+                                        alt="Product Preview"
+                                        style={{
+                                            maxWidth: '200px',
+                                            borderRadius: '8px',
+                                            border: '2px solid #e5e7eb'
+                                        }}
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                        }}
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         {/* Image Upload (Creative Mode) */}

@@ -162,8 +162,14 @@ async function generateImage(prompt) {
 }
 
 // Generate article from product link
-async function generateFromProductLink(productUrl) {
+async function generateFromProductLink(productUrl, productImageUrl = null) {
     const productData = await scrapeProductPage(productUrl);
+
+    // Build the prompt with product image context if available
+    let promptAddition = '';
+    if (productImageUrl) {
+        promptAddition = `\n\nPRODUCT IMAGE PROVIDED: You have access to the actual product image. Use it to create more accurate image prompts that show the real product in before/after scenarios.`;
+    }
 
     const prompt = `Create a high-converting advertorial for this product:
 
@@ -172,7 +178,7 @@ PRODUCT INFO:
 - Title: ${productData.title}
 - Description: ${productData.description}
 - Price: ${productData.price}
-- Additional context: ${productData.bodyText.substring(0, 500)}
+- Additional context: ${productData.bodyText.substring(0, 500)}${promptAddition}
 
 Generate a complete advertorial with:
 
@@ -216,6 +222,7 @@ Generate a complete advertorial with:
    - Use dramatic lighting, close-ups, or before/after scenarios
    - IMPORTANT: If showing people, specify "Indian household" or "Indian family"
    - For before/after scenarios, reference the actual product: "${productData.title}"
+   ${productImageUrl ? '- You have seen the product image, so describe it accurately in the prompts' : ''}
    - Examples: 
      * "dramatic close-up of Indian woman's shocked face looking at messy kitchen counter with ${productData.title} in foreground"
      * "split screen: left side shows cluttered Indian living room, right side shows same room pristine and organized with ${productData.title} visible"
@@ -252,12 +259,26 @@ Return ONLY valid JSON in this exact format:
   "image_prompts": ["prompt 1", "prompt 2"]
 }`;
 
+    // If product image is provided, use vision model
+    const messages = [
+        { role: "system", content: SYSTEM_PROMPT }
+    ];
+
+    if (productImageUrl) {
+        messages.push({
+            role: "user",
+            content: [
+                { type: "text", text: prompt },
+                { type: "image_url", image_url: { url: productImageUrl } }
+            ]
+        });
+    } else {
+        messages.push({ role: "user", content: prompt });
+    }
+
     const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
-        messages: [
-            { role: "system", content: SYSTEM_PROMPT },
-            { role: "user", content: prompt }
-        ],
+        messages,
         temperature: 0.9,
         max_tokens: 3000,
         response_format: { type: "json_object" }
@@ -341,7 +362,7 @@ Generate the same JSON structure as before with headline, hook, story, benefits,
 // API Route Handler
 export async function POST(request) {
     try {
-        const { mode, productUrl, imageUrl } = await request.json();
+        const { mode, productUrl, productImageUrl, imageUrl } = await request.json();
 
         if (!productUrl) {
             return NextResponse.json(
@@ -353,7 +374,7 @@ export async function POST(request) {
         let articleData;
 
         if (mode === 'product') {
-            articleData = await generateFromProductLink(productUrl);
+            articleData = await generateFromProductLink(productUrl, productImageUrl);
         } else if (mode === 'creative') {
             if (!imageUrl) {
                 return NextResponse.json(
