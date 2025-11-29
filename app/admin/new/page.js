@@ -130,26 +130,26 @@ export default function NewArticle() {
     };
 
     const handleAIGenerate = async () => {
-        if (generationMode === 'product' && !productUrl) {
+        if (aiMode === 'product' && !productUrl) {
             alert('Please select a product first');
             return;
         }
-        if (generationMode === 'creative' && !adImage) {
+        if (aiMode === 'creative' && !imageFile) {
             alert('Please upload an ad creative first');
             return;
         }
 
         setGenerating(true);
-        setGenerationStep('Initializing AI...');
+        setProgressMessage('Initializing AI...'); // Changed setGenerationStep to setProgressMessage as defined in state
 
         try {
             let payload = {
-                mode: generationMode,
+                mode: aiMode,
                 productUrl,
                 angle: selectedAngle // Pass the selected angle
             };
 
-            if (generationMode === 'product') {
+            if (aiMode === 'product') {
                 payload.productImages = productImages;
                 payload.productDescription = productDescription;
             } else {
@@ -157,25 +157,24 @@ export default function NewArticle() {
                 const reader = new FileReader();
                 const base64Image = await new Promise((resolve) => {
                     reader.onload = (e) => resolve(e.target.result);
-                    reader.readAsDataURL(adImage);
+                    reader.readAsDataURL(imageFile);
                 });
                 payload.imageUrl = base64Image;
             }
 
-            setGenerationStep('Analyzing product & writing copy...');
+            setProgressMessage('Analyzing product & writing copy...');
             const res = await fetch('/api/generate-article', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
-            setGenerationStep('🎨 Generating images...');
+            setProgressMessage('🎨 Generating images...');
 
             const data = await res.json();
-
             if (data.success) {
                 try {
-                    setGenerationStep('📝 Populating form...');
+                    setProgressMessage('📝 Populating form...');
 
                     // Extract generated images
                     const generatedImgs = data.article.generated_images || [];
