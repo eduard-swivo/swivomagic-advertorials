@@ -261,13 +261,18 @@ Generate a complete advertorial with:
 
 9. HERO IMAGE PROMPTS: Create 2 DRAMATIC, attention-grabbing image prompts that DIRECTLY relate to the selected ANGLE (${angle}).
    
-   **IMAGE 1 - PRIMARY ANGLE SHOT:**
+   **IMAGE 1 (HERO IMAGE) - PROBLEM ONLY:**
    - Follow the instruction: "${selectedAngleInstruction.split('Image 1: ')[1].split(' Image 2:')[0]}"
    - Make it relatable and dramatic
+   - **CRITICAL: DO NOT show ANY products, solutions, or cleaning items in Image 1**
+   - **CRITICAL: Focus ONLY on the problem, frustration, mess, or pain point**
+   - Show the emotional impact of the problem (frustrated person, messy situation, etc.)
+   - Example: "Close-up of frustrated Indian woman looking at messy kitchen counter with spills and stains" (NO cleaning products visible)
    
-   **IMAGE 2 - SECONDARY/SUPPORTING SHOT:**
+   **IMAGE 2 - SOLUTION/PRODUCT:**
    - Follow the instruction: "${selectedAngleInstruction.split('Image 2: ')[1]}"
    - Reference the actual product: "${productData.title}"
+   - This is where you show the product and the solution
    
    **GENERAL RULES:**
    - IMPORTANT: If showing people, specify "Indian household" or "Indian family"
@@ -382,8 +387,8 @@ IMPORTANT:
 - Hook paragraph must be plain text (NO asterisks or markdown formatting)
 - **CRITICAL: NEVER use em dashes (—) anywhere in the content. Use regular hyphens (-) or commas instead.**
 - Image prompts must follow the PROBLEM → SOLUTION structure:
-  * IMAGE 1: Focus on the problem/pain point from the hook (NO product shown unless before/after)
-  * IMAGE 2: Show the solution/transformation with the product
+  * IMAGE 1 (HERO): Focus ONLY on the problem/pain point - **DO NOT show ANY products, solutions, or cleaning items**. Show only the frustration, mess, or emotional impact.
+  * IMAGE 2: Show the solution/transformation WITH the product
 - Make images attention-grabbing with dramatic lighting, close-ups, or striking scenarios
 - If showing people, specify "Indian household" or "Indian family"
 - For before/after scenarios, reference the product: "${productData.title}"
