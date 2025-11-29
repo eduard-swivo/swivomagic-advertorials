@@ -16,6 +16,7 @@ export default function NewArticle() {
     const [productUrl, setProductUrl] = useState('');
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
+    const [generatedImages, setGeneratedImages] = useState([]); // Store DALL-E images
 
     // Form data
     const [formData, setFormData] = useState({
@@ -81,6 +82,12 @@ export default function NewArticle() {
                     ...data.article,
                     hero_image: '/images/placeholder.jpg' // User will need to upload
                 });
+
+                // Show generated images if available
+                if (data.article.generated_images && data.article.generated_images.length > 0) {
+                    setGeneratedImages(data.article.generated_images);
+                }
+
                 setMode('manual'); // Switch to manual mode to review/edit
                 alert('✨ Article generated! Review and adjust as needed, then save.');
             } else {
@@ -367,6 +374,51 @@ export default function NewArticle() {
             {/* Manual Form (shown when mode is manual or after AI generation) */}
             {mode === 'manual' && (
                 <form onSubmit={handleSubmit} className="form-container">
+                    {/* Generated Images Gallery */}
+                    {generatedImages.length > 0 && (
+                        <div style={{
+                            background: '#f0fdf4',
+                            padding: '24px',
+                            borderRadius: '12px',
+                            marginBottom: '32px',
+                            border: '2px solid #bbf7d0'
+                        }}>
+                            <h3 style={{ color: '#166534', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                🎨 AI Generated Images
+                            </h3>
+                            <p style={{ marginBottom: '16px', color: '#15803d', fontSize: '14px' }}>
+                                <strong>Right-click and "Save Image As"</strong> to download these. Then upload them to your <code>/public/images/</code> folder.
+                                <br />
+                                <small>⚠️ These links expire in 1 hour!</small>
+                            </p>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+                                {generatedImages.map((url, i) => (
+                                    <div key={i} style={{ position: 'relative' }}>
+                                        <img
+                                            src={url}
+                                            alt={`Generated ${i + 1}`}
+                                            style={{
+                                                width: '100%',
+                                                borderRadius: '8px',
+                                                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                                                border: '1px solid #bbf7d0'
+                                            }}
+                                        />
+                                        <div style={{
+                                            marginTop: '8px',
+                                            fontSize: '12px',
+                                            color: '#166534',
+                                            fontWeight: '600',
+                                            textAlign: 'center'
+                                        }}>
+                                            Image {i + 1}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Rest of the manual form - keeping all the existing fields */}
                     <h2 style={{ marginBottom: '24px', color: '#111' }}>Basic Information</h2>
 

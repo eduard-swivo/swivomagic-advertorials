@@ -84,6 +84,23 @@ async function scrapeProductPage(url) {
     }
 }
 
+// Generate image using DALL-E 3
+async function generateImage(prompt) {
+    try {
+        const response = await openai.images.generate({
+            model: "dall-e-3",
+            prompt: prompt + " photorealistic, 4k, highly detailed, editorial photography style, natural lighting",
+            n: 1,
+            size: "1024x1024",
+            quality: "standard",
+        });
+        return response.data[0].url;
+    } catch (error) {
+        console.error('Image generation error:', error);
+        return null;
+    }
+}
+
 // Generate article from product link
 async function generateFromProductLink(productUrl) {
     const productData = await scrapeProductPage(productUrl);
@@ -122,6 +139,7 @@ Generate a complete advertorial with:
    - Text: Scarcity, urgency, or social proof
 
 6. CTA TEXT: Action-oriented, benefit-driven button text
+7. SUPPORTING IMAGES: Create 2 distinct, detailed prompts for photorealistic images that would support this story (e.g., "close up of dirty vs clean window", "happy family in living room").
 
 Also suggest:
 - CATEGORY: "Lifestyle" or "Health & Family"
@@ -147,7 +165,8 @@ Return ONLY valid JSON in this exact format:
     "title": "urgency title",
     "text": "urgency text"
   },
-  "cta_text": "CTA BUTTON TEXT >>"
+  "cta_text": "CTA BUTTON TEXT >>",
+  "image_prompts": ["prompt 1", "prompt 2"]
 }`;
 
     const completion = await openai.chat.completions.create({
@@ -161,7 +180,16 @@ Return ONLY valid JSON in this exact format:
         response_format: { type: "json_object" }
     });
 
-    return JSON.parse(completion.choices[0].message.content);
+    const articleData = JSON.parse(completion.choices[0].message.content);
+
+    // Generate images in parallel
+    if (articleData.image_prompts && articleData.image_prompts.length > 0) {
+        const imagePromises = articleData.image_prompts.map(prompt => generateImage(prompt));
+        const images = await Promise.all(imagePromises);
+        articleData.generated_images = images.filter(img => img !== null);
+    }
+
+    return articleData;
 }
 
 // Generate article from ad creative
@@ -191,6 +219,7 @@ Create an advertorial that:
 3. Maintains the same emotional tone
 4. Delivers on the ad's promise
 
+Include 2 detailed prompts for supporting images in the 'image_prompts' array.
 Generate the same JSON structure as before with headline, hook, story, benefits, urgency box, and CTA.`
                     },
                     {
@@ -207,7 +236,16 @@ Generate the same JSON structure as before with headline, hook, story, benefits,
         response_format: { type: "json_object" }
     });
 
-    return JSON.parse(completion.choices[0].message.content);
+    const articleData = JSON.parse(completion.choices[0].message.content);
+
+    // Generate images in parallel
+    if (articleData.image_prompts && articleData.image_prompts.length > 0) {
+        const imagePromises = articleData.image_prompts.map(prompt => generateImage(prompt));
+        const images = await Promise.all(imagePromises);
+        articleData.generated_images = images.filter(img => img !== null);
+    }
+
+    return articleData;
 }
 
 // API Route Handler
