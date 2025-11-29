@@ -264,7 +264,7 @@ Generate a complete advertorial with:
 
 Also suggest:
 - CATEGORY: "Lifestyle" or "Health & Family"
-- AUTHOR NAME: Realistic Indian name
+- AUTHOR NAME: Realistic Indian woman's name with abbreviated surname (e.g., "Priya S.", "Anjali M.", "Sneha K.")
 - ADVERTORIAL LABEL: Short catchy label (e.g., "BREAKING DISCOVERY" or "HEALTH ALERT")
 - EXCERPT: One-line teaser for homepage
 
@@ -375,7 +375,8 @@ IMPORTANT:
 - For before/after scenarios, reference the product: "${productData.title}"
 
 Include 2 detailed DRAMATIC image prompts in the 'image_prompts' array that relate to the hook.
-Generate the same JSON structure as before with headline, slug, hook, story, benefits, urgency box, comments (Hinglish), and CTA.`
+Generate the same JSON structure as before with headline, slug, hook, story, benefits, urgency box, comments (Hinglish), and CTA.
+- AUTHOR NAME: Realistic Indian woman's name with abbreviated surname (e.g., "Priya S.")`
                     },
                     {
                         type: "image_url",
