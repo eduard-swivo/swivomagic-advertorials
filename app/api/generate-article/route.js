@@ -373,7 +373,7 @@ Return ONLY valid JSON in this exact format:
 }
 
 // Generate article from ad creative
-async function generateFromAdCreative(imageUrl, productUrl, productDescription = null) {
+async function generateFromAdCreative(imageUrl, productUrl, productDescription = null, productMainImage = null) {
     const productData = await scrapeProductPage(productUrl);
 
     const completion = await openai.chat.completions.create({
@@ -385,34 +385,87 @@ async function generateFromAdCreative(imageUrl, productUrl, productDescription =
                 content: [
                     {
                         type: "text",
-                        text: `Analyze this ad creative and create a congruent advertorial that matches its messaging and tone.
+                        text: `**ANALYZE THE UPLOADED AD CREATIVE AND CREATE A MATCHING ADVERTORIAL**
 
-PRODUCT INFO:
+You are looking at an ad creative image. Your job is to:
+1. **ANALYZE** the ad creative's headline, messaging, angle, and emotional tone
+2. **EXTRACT** the core problem/pain point being highlighted
+3. **IDENTIFY** the promise or transformation being offered
+4. **CREATE** a full advertorial that continues this exact narrative
+
+PRODUCT INFO (The Solution):
 - URL: ${productData.url}
 - Title: ${productData.title}
 - Description: ${productData.description}
 - Price: ${productData.price}
+${productDescription ? `- Physical Description: "${productDescription}"` : ''}
 
-Create an advertorial that:
-1. Matches the ad's messaging and angle
-2. Continues the narrative from the ad
-3. Maintains the same emotional tone
-4. Delivers on the ad's promise
+**CRITICAL INSTRUCTIONS:**
 
-IMPORTANT:
+**HEADLINE & HOOK:**
+- The headline should echo or expand on the ad creative's main message
+- The hook should feel like a natural continuation of what the ad promised
+- Match the emotional intensity and urgency of the ad
+
+**STORY:**
+- Start with the EXACT problem/pain point shown in the ad creative
+- Build on the fear, frustration, or desire the ad triggered
+- Introduce "${productData.title}" as the solution the ad was hinting at
+- Use the same tone (scientific, emotional, urgent, etc.) as the ad
+- If the ad mentions specific dangers, statistics, or claims, reference them in the story
+
+**IMAGE GENERATION:**
+- **IMAGE 1 (HERO)**: Recreate or echo the PROBLEM shown in the ad creative
+  * If the ad shows danger/fear (e.g., toxic home, health risk), Image 1 should show that same danger
+  * Match the visual style and emotional impact of the ad
+  * **DO NOT show products in Image 1** - only the problem/fear
+  * Example: If ad shows "toxic danger in home", Image 1 = "Worried Indian family in home with subtle danger symbols, no products visible"
+
+- **IMAGE 2**: Show the SOLUTION with the actual product
+  * Show "${productData.title}" as the answer to the problem from the ad
+  ${productMainImage ? '* **CRITICAL: Base the product appearance on the MAIN PRODUCT IMAGE provided. Match it exactly.**' : ''}
+  * Show relief, transformation, or safety
+
+**FORMATTING:**
 - Generate a URL-friendly slug from the headline (lowercase, hyphens, 5-8 words max)
 - Hook paragraph must be plain text (NO asterisks or markdown formatting)
-- **CRITICAL: NEVER use em dashes (—) anywhere in the content. Use regular hyphens (-) or commas instead.**
-- Image prompts must follow the PROBLEM → SOLUTION structure:
-  * IMAGE 1 (HERO): Focus ONLY on the problem/pain point - **DO NOT show ANY products, solutions, or cleaning items**. Show only the frustration, mess, or emotional impact.
-  * IMAGE 2: Show the solution/transformation WITH the product
-- Make images attention-grabbing with dramatic lighting, close-ups, or striking scenarios
-- If showing people, specify "Indian household" or "Indian family"
-- For before/after scenarios, reference the product: "${productData.title}"
+- **CRITICAL: NEVER use em dashes (—). Use regular hyphens (-) or commas instead.**
+- Use **bold** for product names and key phrases in the story
+- Keep paragraphs short (2-4 sentences)
+- Use conversational language
 
-Include 2 detailed DRAMATIC image prompts in the 'image_prompts' array that relate to the hook.
-Generate the same JSON structure as before with headline, slug, hook, story, benefits, urgency box, comments (Hinglish), and CTA.
-- AUTHOR NAME: Realistic Indian woman's name with abbreviated surname (e.g., "Priya S.")`
+**COMMENTS:**
+- Create 5-7 Hinglish comments (10% Hindi, 90% English)
+- Timestamps must be random DAYS apart (e.g., "2 days ago", "1 week ago")
+- Make them sound authentic
+
+**AUTHOR:**
+- Realistic Indian woman's name with abbreviated surname (e.g., "Priya S.")
+
+Return ONLY valid JSON in this exact format:
+{
+  "title": "headline here",
+  "slug": "url-friendly-slug",
+  "category": "Lifestyle",
+  "author": "Name Here",
+  "advertorial_label": "LABEL HERE",
+  "excerpt": "teaser here",
+  "hook": "hook paragraph",
+  "story": ["paragraph 1", "paragraph 2", ...],
+  "benefits": [
+    {"title": "Benefit 1", "description": "details"},
+    {"title": "Benefit 2", "description": "details"}
+  ],
+  "urgency_box": {
+    "title": "urgency title",
+    "text": "urgency text"
+  },
+  "comments": [
+    {"name": "User Name", "text": "Comment text here", "time": "2 days ago"}
+  ],
+  "cta_text": "CTA BUTTON TEXT >>",
+  "image_prompts": ["prompt 1", "prompt 2"]
+}`
                     },
                     {
                         type: "image_url",
@@ -465,7 +518,7 @@ export async function POST(request) {
                     { status: 400 }
                 );
             }
-            articleData = await generateFromAdCreative(imageUrl, productUrl, productDescription);
+            articleData = await generateFromAdCreative(imageUrl, productUrl, productDescription, productMainImage);
         } else {
             return NextResponse.json(
                 { success: false, error: 'Invalid mode' },

@@ -161,6 +161,8 @@ export default function NewArticle() {
                     reader.readAsDataURL(imageFile);
                 });
                 payload.imageUrl = base64Image;
+                payload.productDescription = productDescription;
+                payload.productMainImage = formData.product_main_image;
             }
 
             setProgressMessage('Analyzing product & writing copy...');
@@ -696,35 +698,37 @@ export default function NewArticle() {
                             </div>
                         )}
 
-                        {/* Advertorial Angle Selector */}
-                        <div style={{ marginBottom: '24px' }}>
-                            <label style={{ display: 'block', fontWeight: '600', marginBottom: '12px', color: '#374151' }}>
-                                Select Advertorial Angle *
-                            </label>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px' }}>
-                                {angles.map((angle) => (
-                                    <div
-                                        key={angle.id}
-                                        onClick={() => setSelectedAngle(angle.id)}
-                                        style={{
-                                            padding: '12px',
-                                            border: `2px solid ${selectedAngle === angle.id ? '#10b981' : '#e5e7eb'}`,
-                                            borderRadius: '8px',
-                                            background: selectedAngle === angle.id ? '#ecfdf5' : 'white',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s'
-                                        }}
-                                    >
-                                        <div style={{ fontWeight: '600', fontSize: '14px', color: selectedAngle === angle.id ? '#047857' : '#374151', marginBottom: '4px' }}>
-                                            {angle.label}
+                        {/* Advertorial Angle Selector - Only show in Product mode */}
+                        {aiMode === 'product' && (
+                            <div style={{ marginBottom: '24px' }}>
+                                <label style={{ display: 'block', fontWeight: '600', marginBottom: '12px', color: '#374151' }}>
+                                    Select Advertorial Angle *
+                                </label>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px' }}>
+                                    {angles.map((angle) => (
+                                        <div
+                                            key={angle.id}
+                                            onClick={() => setSelectedAngle(angle.id)}
+                                            style={{
+                                                padding: '12px',
+                                                border: `2px solid ${selectedAngle === angle.id ? '#10b981' : '#e5e7eb'}`,
+                                                borderRadius: '8px',
+                                                background: selectedAngle === angle.id ? '#ecfdf5' : 'white',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s'
+                                            }}
+                                        >
+                                            <div style={{ fontWeight: '600', fontSize: '14px', color: selectedAngle === angle.id ? '#047857' : '#374151', marginBottom: '4px' }}>
+                                                {angle.label}
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                                                {angle.description}
+                                            </div>
                                         </div>
-                                        <div style={{ fontSize: '11px', color: '#6b7280', lineHeight: '1.2' }}>
-                                            {angle.description}
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Generate Button */}
                         <button
