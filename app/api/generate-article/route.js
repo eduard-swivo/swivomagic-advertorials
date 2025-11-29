@@ -237,6 +237,7 @@ Generate a complete advertorial with:
    - Approx 10% Hindi words/phrases, 90% English
    - Examples: "Bhai, this is amazing", "Maine order kiya tha, delivery fast thi", "Iska price kya hai?"
    - Make them sound authentic and varied (some questions, some praise)
+   - TIMESTAMPS: Must be random DAYS apart (e.g., "2 days ago", "5 days ago", "1 week ago"), NOT minutes or hours.
 
 9. HERO IMAGE PROMPTS: Create 2 DRAMATIC, attention-grabbing image prompts that DIRECTLY relate to the hook paragraph
    
@@ -287,7 +288,7 @@ Return ONLY valid JSON in this exact format:
     "text": "urgency text"
   },
   "comments": [
-    {"name": "User Name", "text": "Comment text here", "time": "2 min ago"}
+    {"name": "User Name", "text": "Comment text here", "time": "2 days ago"}
   ],
   "cta_text": "CTA BUTTON TEXT >>",
   "image_prompts": ["prompt 1", "prompt 2"]
