@@ -86,43 +86,40 @@ async function scrapeProductPage(url) {
     }
 }
 
-// Generate image using Google Imagen 3 via SDK
+// Generate image using Google Gemini 3 Pro Image (Nano Banana Pro)
 async function generateImage(prompt) {
     try {
         const apiKey = process.env.GOOGLE_API_KEY;
         if (!apiKey) throw new Error('Google API Key is missing');
 
-        // Initialize Google AI
+        // Initialize Google AI with Gemini 3 Pro Image
         const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-3-pro-image-preview" });
 
-        // Note: As of late 2025, image generation might still use a specific model ID
-        // We'll try the latest Imagen model available via the SDK
-        const model = genAI.getGenerativeModel({ model: "imagen-3.0-generate-001" });
+        // Enhanced prompt for photorealism
+        const enhancedPrompt = prompt + " raw photo, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, candid photography, no illustration, no 3d render, no cartoon, no cgi";
 
-        // The SDK method for images might differ slightly based on version
-        // If standard generateContent doesn't work for images, we fallback to REST but with better error handling
-        // However, let's try the REST endpoint again but with the exact correct format for Imagen 3
+        // Generate image
+        const result = await model.generateContent({
+            contents: [{
+                role: 'user',
+                parts: [{ text: enhancedPrompt }]
+            }],
+            generationConfig: {
+                temperature: 0.4,
+                candidateCount: 1,
+            }
+        });
 
-        const response = await axios.post(
-            `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`,
-            {
-                instances: [
-                    { prompt: prompt + " raw photo, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, candid photography, no illustration, no 3d render, no cartoon, no cgi" }
-                ],
-                parameters: {
-                    sampleCount: 1,
-                    aspectRatio: "4:3",
-                    outputOptions: { mimeType: "image/jpeg" }
-                }
-            },
-            { headers: { 'Content-Type': 'application/json' } }
-        );
+        // Extract image data
+        const response = await result.response;
+        const imageData = response.candidates[0].content.parts.find(part => part.inlineData);
 
-        if (!response.data.predictions || !response.data.predictions[0]) {
-            throw new Error('No predictions returned from Google');
+        if (!imageData || !imageData.inlineData) {
+            throw new Error('No image data returned from Gemini');
         }
 
-        const base64Image = response.data.predictions[0].bytesBase64Encoded;
+        const base64Image = imageData.inlineData.data;
         const buffer = Buffer.from(base64Image, 'base64');
 
         // Upload to Vercel Blob
