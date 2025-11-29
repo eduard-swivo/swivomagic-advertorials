@@ -10,7 +10,7 @@ async function getArticlesByCategory(category) {
             SELECT * FROM articles 
             WHERE published = true 
             AND LOWER(category) = LOWER(${category})
-            ORDER BY created_at DESC
+            ORDER BY id DESC
         `;
         return rows;
     } catch (error) {

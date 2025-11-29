@@ -30,13 +30,10 @@ export default function AdminDashboard() {
 
     // Sort articles based on sortOrder
     const sortedArticles = [...articles].sort((a, b) => {
-        const dateA = new Date(a.created_at || a.published_date);
-        const dateB = new Date(b.created_at || b.published_date);
-
         if (sortOrder === 'newest') {
-            return dateB - dateA; // Newest first
+            return b.id - a.id; // Newest first (higher ID = newer)
         } else {
-            return dateA - dateB; // Oldest first
+            return a.id - b.id; // Oldest first (lower ID = older)
         }
     });
 
