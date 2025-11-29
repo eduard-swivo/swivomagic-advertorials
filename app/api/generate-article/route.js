@@ -107,7 +107,7 @@ async function generateImage(prompt) {
             `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`,
             {
                 instances: [
-                    { prompt: prompt + " photorealistic, 4k, highly detailed, editorial photography style, natural lighting" }
+                    { prompt: prompt + " raw photo, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, candid photography, no illustration, no 3d render, no cartoon, no cgi" }
                 ],
                 parameters: {
                     sampleCount: 1,
@@ -141,7 +141,7 @@ async function generateImage(prompt) {
         try {
             const response = await openai.images.generate({
                 model: "dall-e-3",
-                prompt: prompt + " photorealistic, 4k, highly detailed, editorial photography style, natural lighting",
+                prompt: prompt + " raw photo, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, candid photography, no illustration, no 3d render, no cartoon, no cgi",
                 n: 1,
                 size: "1792x1024", // Landscape (closest to 4:3)
                 quality: "standard",
