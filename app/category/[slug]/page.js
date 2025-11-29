@@ -25,10 +25,17 @@ export default async function CategoryPage({ params }) {
     const categorySlug = params.slug;
 
     // Convert slug to display name
-    const categoryName = categorySlug
+    let categoryName = categorySlug
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
+
+    // Handle special cases with ampersands
+    if (categorySlug === 'health-family') {
+        categoryName = 'Health & Family';
+    } else if (categorySlug === 'home-garden') {
+        categoryName = 'Home & Garden';
+    }
 
     const articles = await getArticlesByCategory(categoryName);
 
@@ -81,10 +88,16 @@ export default async function CategoryPage({ params }) {
 // Generate metadata for SEO
 export async function generateMetadata({ params }) {
     const categorySlug = params.slug;
-    const categoryName = categorySlug
+    let categoryName = categorySlug
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
+
+    if (categorySlug === 'health-family') {
+        categoryName = 'Health & Family';
+    } else if (categorySlug === 'home-garden') {
+        categoryName = 'Home & Garden';
+    }
 
     return {
         title: `${categoryName} - Swivo Magazine`,
