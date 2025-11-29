@@ -6,6 +6,7 @@ import { getAllArticles } from '@/lib/db';
 // No need for fetch helper anymore
 // Direct DB access is better for Server Components
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function Home() {
     const articles = await getAllArticles();
