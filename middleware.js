@@ -2,15 +2,14 @@ import { NextResponse } from 'next/server';
 
 export function middleware(request) {
     const { pathname } = request.nextUrl;
+    const hostname = request.headers.get('host');
 
+    // 1. ADMIN AUTHENTICATION
     // Check if accessing admin pages (except login)
     if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
         const session = request.cookies.get('admin_session');
-
-        // If no session, redirect to login
         if (!session) {
-            const loginUrl = new URL('/admin/login', request.url);
-            return NextResponse.redirect(loginUrl);
+            return NextResponse.redirect(new URL('/admin/login', request.url));
         }
     }
 
@@ -18,8 +17,34 @@ export function middleware(request) {
     if (pathname === '/admin/login') {
         const session = request.cookies.get('admin_session');
         if (session) {
-            const adminUrl = new URL('/admin', request.url);
-            return NextResponse.redirect(adminUrl);
+            return NextResponse.redirect(new URL('/admin', request.url));
+        }
+    }
+
+    // 2. SUBDOMAIN/CUSTOM DOMAIN ROUTING
+    // Exclude API, Admin, Static files, and Next.js internals
+    if (
+        !pathname.startsWith('/admin') &&
+        !pathname.startsWith('/api') &&
+        !pathname.startsWith('/_next') &&
+        !pathname.startsWith('/favicon.ico') &&
+        !pathname.match(/\.(jpg|jpeg|png|gif|svg|css|js)$/)
+    ) {
+        // Check if we are on the custom domain (or any domain that isn't localhost/vercel-preview)
+        // You can be more specific: if (hostname === 'latest.swivomagic.com')
+        // For now, we'll apply this rewrite logic to ALL domains for root paths that aren't home
+
+        // If path is just '/', do nothing (shows home page)
+        if (pathname === '/') {
+            return NextResponse.next();
+        }
+
+        // If path is NOT starting with /article, rewrite it to /article/[slug]
+        // This allows 'latest.swivomagic.com/my-slug' to render 'app/article/[slug]'
+        if (!pathname.startsWith('/article/')) {
+            const url = request.nextUrl.clone();
+            url.pathname = `/article${pathname}`;
+            return NextResponse.rewrite(url);
         }
     }
 
@@ -27,5 +52,13 @@ export function middleware(request) {
 }
 
 export const config = {
-    matcher: '/admin/:path*'
+    matcher: [
+        /*
+         * Match all request paths except for the ones starting with:
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         */
+        '/((?!_next/static|_next/image|favicon.ico).*)',
+    ],
 };
