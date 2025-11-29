@@ -184,10 +184,10 @@ async function generateFromProductLink(productUrl, productImages = null, product
     // Angle Instructions
     const angleInstructions = {
         'in-use': "ANGLE: Product In Use. Focus on the MECHANISM and ACTION. The story should describe exactly how the product works. Image 1: Show the problem in action. Image 2: Show the product being used and working perfectly.",
-        'before': "ANGLE: The Before. Focus on the PAIN POINT and FRUSTRATION. The story should dwell on the struggle before finding the solution. Image 1: A dramatic, high-emotion shot of the problem (mess, pain, etc.). Image 2: The relief of finding the solution.",
+        'before': "ANGLE: The Before. Focus on the PAIN POINT and FRUSTRATION. The story should dwell on the struggle before finding the solution. Image 1: A dramatic, high-emotion shot of ONLY the problem (mess, pain, frustration) - ABSOLUTELY NO PRODUCTS OR SOLUTIONS VISIBLE. Image 2: The relief of finding the solution.",
         'before-after': "ANGLE: Before & After. Focus on the TRANSFORMATION. The story should contrast the 'old way' vs the 'new way'. Image 1: Split screen showing the problem (left) and the result (right). Image 2: The product sitting next to the perfect result.",
         'in-hand': "ANGLE: Product In Hand. Focus on the DISCOVERY and the OBJECT. The story should feel like a personal review of a new gadget. Image 1: Holding the product in hand, showing its size/quality. Image 2: The product in its environment.",
-        'story': "ANGLE: Story Related. Focus on the NARRATIVE and EMOTION. The story should be about a person (e.g., grandmother, busy mom) and their journey. Image 1: An emotional shot related to the story (e.g., tired mom). Image 2: Happy family/person using the product.",
+        'story': "ANGLE: Story Related. Focus on the NARRATIVE and EMOTION. The story should be about a person (e.g., grandmother, busy mom) and their journey. Image 1: An emotional shot related to the story (e.g., tired mom, struggling person) - NO PRODUCTS VISIBLE, ONLY THE EMOTIONAL SITUATION. Image 2: Happy family/person using the product.",
         'after': "ANGLE: The After. Focus on the RESULT and RELIEF. The story should start with the happy ending and explain how they got there. Image 1: The perfect, pristine result. Image 2: The person enjoying the result with the product nearby."
     };
 
@@ -266,9 +266,16 @@ Generate a complete advertorial with:
    - Make it relatable and dramatic
    ${['before-after', 'in-use', 'in-hand', 'after'].includes(angle)
             ? `- For this angle (${angle}), you MAY show the product as specified in the angle instruction`
-            : '- **CRITICAL: DO NOT show ANY products, solutions, or cleaning items in Image 1**\n   - **CRITICAL: Focus ONLY on the problem, frustration, mess, or pain point**'}
+            : `- **CRITICAL PROHIBITION: Image 1 must NOT contain:**
+     * NO product bottles, containers, or packaging
+     * NO cleaning supplies or tools
+     * NO branded items or product names
+     * NO solutions of any kind
+   - **ONLY SHOW: The problem, mess, frustration, or emotional pain**
+   - Focus on the person's frustration and the messy/problematic situation ONLY`}
    - Show the emotional impact ${['before-after', 'in-use', 'in-hand', 'after'].includes(angle) ? 'and/or the product in action' : '(frustrated person, messy situation, etc.)'}
-   ${!['before-after', 'in-use', 'in-hand', 'after'].includes(angle) ? '- Example: "Close-up of frustrated Indian woman looking at messy kitchen counter with spills and stains" (NO cleaning products visible)' : ''}
+   ${!['before-after', 'in-use', 'in-hand', 'after'].includes(angle) ? `- CORRECT Example: "Close-up of exhausted Indian woman with head in hands, looking at dirty kitchen counter covered in stains and spills"
+   - WRONG Example: "Woman with cleaning products" (NO! No products in Image 1!)` : ''}
    
    **IMAGE 2 - SOLUTION/PRODUCT:**
    - Follow the instruction: "${selectedAngleInstruction.split('Image 2: ')[1]}"
