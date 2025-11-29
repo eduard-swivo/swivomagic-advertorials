@@ -190,12 +190,19 @@ Generate a complete advertorial with:
 
 1. HEADLINE: Aggressive, clickbaity, curiosity-driven (use numbers, questions, or shocking statements)
 
-2. HOOK PARAGRAPH: Bold opening that grabs attention and creates intrigue (will be displayed in bold)
+2. SLUG: Generate a URL-friendly slug from the headline
+   - Convert to lowercase
+   - Replace spaces with hyphens
+   - Remove special characters (₹, ?, !, etc.)
+   - Keep only 5-8 words (max 60 characters)
+   - Example: "This ₹699 Cloth Replaced My Entire Cleaning Cabinet" → "this-699-cloth-replaced-my-cleaning-cabinet"
+
+3. HOOK PARAGRAPH: Bold opening that grabs attention and creates intrigue (will be displayed in bold)
    - DO NOT use asterisks or markdown formatting
    - Write in plain text only
    - Make it dramatic and compelling
 
-3. STORY (5-8 paragraphs): 
+4. STORY (5-8 paragraphs): 
    - Start with a relatable problem/pain point
    - Build tension and frustration
    - Introduce the "discovery" moment with a **BOLD SUBHEADING** (e.g., "**It was the Swivo Magic Cloth.**")
@@ -211,27 +218,27 @@ Generate a complete advertorial with:
    - Keep paragraphs short (2-4 sentences max)
    - Use conversational, punchy language
 
-4. BENEFITS (3-4 items):
+5. BENEFITS (3-4 items):
    - Each with a catchy, **BOLD** title (e.g., "**Reason #1: It's Not Toxic (But It Works)**")
    - Detailed description of the benefit
    - Use "could", "may", "might" for claims
    - Focus on transformation, not features
    - Bold key phrases and product names in descriptions
 
-5. URGENCY BOX:
+6. URGENCY BOX:
    - Title: Create FOMO
    - Text: Scarcity, urgency, or social proof
 
-6. CTA TEXT: Action-oriented, benefit-driven button text
+7. CTA TEXT: Action-oriented, benefit-driven button text
 
-7. COMMENTS SECTION (5-7 comments):
+8. COMMENTS SECTION (5-7 comments):
    - Create realistic user comments
    - Use "Hinglish" style (mix of Hindi and English)
    - Approx 10% Hindi words/phrases, 90% English
    - Examples: "Bhai, this is amazing", "Maine order kiya tha, delivery fast thi", "Iska price kya hai?"
    - Make them sound authentic and varied (some questions, some praise)
 
-8. HERO IMAGE PROMPTS: Create 2 DRAMATIC, attention-grabbing image prompts that DIRECTLY relate to the hook paragraph
+9. HERO IMAGE PROMPTS: Create 2 DRAMATIC, attention-grabbing image prompts that DIRECTLY relate to the hook paragraph
    
    **IMAGE 1 - THE PROBLEM:**
    - Focus ONLY on the problem/pain point mentioned in the hook
@@ -358,6 +365,7 @@ Create an advertorial that:
 4. Delivers on the ad's promise
 
 IMPORTANT:
+- Generate a URL-friendly slug from the headline (lowercase, hyphens, 5-8 words max)
 - Hook paragraph must be plain text (NO asterisks or markdown formatting)
 - Image prompts must follow the PROBLEM → SOLUTION structure:
   * IMAGE 1: Focus on the problem/pain point from the hook (NO product shown unless before/after)
@@ -367,7 +375,7 @@ IMPORTANT:
 - For before/after scenarios, reference the product: "${productData.title}"
 
 Include 2 detailed DRAMATIC image prompts in the 'image_prompts' array that relate to the hook.
-Generate the same JSON structure as before with headline, hook, story, benefits, urgency box, comments (Hinglish), and CTA.`
+Generate the same JSON structure as before with headline, slug, hook, story, benefits, urgency box, comments (Hinglish), and CTA.`
                     },
                     {
                         type: "image_url",
