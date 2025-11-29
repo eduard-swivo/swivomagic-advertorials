@@ -6,6 +6,8 @@ import { notFound } from 'next/navigation';
 
 import { getArticleBySlug } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 // Helper function to parse simple Markdown (bold, italic)
 function parseMarkdown(text) {
     if (!text) return '';
