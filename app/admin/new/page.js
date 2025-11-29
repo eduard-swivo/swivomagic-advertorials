@@ -24,6 +24,16 @@ export default function NewArticle() {
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
     const [generatedImages, setGeneratedImages] = useState([]); // Store DALL-E images
+    const [selectedAngle, setSelectedAngle] = useState('before-after'); // Default angle
+
+    const angles = [
+        { id: 'in-use', label: 'Product In Use', description: 'Focus on the mechanism and action' },
+        { id: 'before', label: 'The Before', description: 'Focus on the pain point and frustration' },
+        { id: 'before-after', label: 'Before & After', description: 'Focus on the transformation' },
+        { id: 'in-hand', label: 'Product In Hand', description: 'Focus on the discovery of the device' },
+        { id: 'story', label: 'Story Related', description: 'Focus on the personal narrative/emotion' },
+        { id: 'after', label: 'The After', description: 'Focus on the result and relief' }
+    ];
 
     // Form data
     const [formData, setFormData] = useState({
