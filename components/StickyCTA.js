@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 
 export default function StickyCTA({ href = "https://swivoproducts.com/pages/swivo-sutra-cleaning-kit" }) {
