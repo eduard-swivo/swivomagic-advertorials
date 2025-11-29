@@ -97,7 +97,7 @@ async function generateImage(prompt) {
 
 export async function POST(request) {
     try {
-        const { hook, productUrl, productImages, productTitle } = await request.json();
+        const { hook, productUrl, productImages, productTitle, productDescription } = await request.json();
 
         if (!hook) {
             return NextResponse.json({ success: false, error: 'Hook is required' }, { status: 400 });
@@ -119,6 +119,7 @@ export async function POST(request) {
         
         CONTEXT:
         - Product: ${title}
+        ${productDescription ? `- Physical Description: "${productDescription}" (Adhere strictly to this)` : ''}
         - Setting: Indian household
         - Style: Photorealistic, dramatic lighting, candid
         

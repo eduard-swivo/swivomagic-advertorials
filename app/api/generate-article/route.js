@@ -162,13 +162,19 @@ async function generateImage(prompt) {
 }
 
 // Generate article from product link
-async function generateFromProductLink(productUrl, productImages = null) {
+// Generate article from product link
+async function generateFromProductLink(productUrl, productImages = null, productDescription = null) {
     const productData = await scrapeProductPage(productUrl);
 
     // Build the prompt with product image context if available
     let promptAddition = '';
+
+    if (productDescription) {
+        promptAddition += `\n\nPHYSICAL PRODUCT DESCRIPTION: "${productDescription}"\n(Use this EXACT description for all visual details in the story and image prompts. Do not hallucinate colors or features.)`;
+    }
+
     if (productImages && productImages.length > 0) {
-        promptAddition = `\n\nPRODUCT IMAGES PROVIDED: You have access to ${productImages.length} product image(s). Use them to create more accurate image prompts that show the real product in before/after scenarios.`;
+        promptAddition += `\n\nPRODUCT IMAGES PROVIDED: You have access to ${productImages.length} product image(s). Use them to create more accurate image prompts that show the real product in before/after scenarios.`;
     }
 
     const prompt = `Create a high-converting advertorial for this product:
@@ -383,7 +389,9 @@ Generate the same JSON structure as before with headline, hook, story, benefits,
 // API Route Handler
 export async function POST(request) {
     try {
-        const { mode, productUrl, productImages, imageUrl } = await request.json();
+        const { mode, productUrl, productImages, productDescription, imageUrl } = await request.json();
+
+        console.log('Generating article in mode:', mode);
 
         if (!productUrl) {
             return NextResponse.json(
@@ -395,7 +403,7 @@ export async function POST(request) {
         let articleData;
 
         if (mode === 'product') {
-            articleData = await generateFromProductLink(productUrl, productImages);
+            articleData = await generateFromProductLink(productUrl, productImages, productDescription);
         } else if (mode === 'creative') {
             if (!imageUrl) {
                 return NextResponse.json(

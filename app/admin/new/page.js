@@ -13,7 +13,10 @@ export default function NewArticle() {
     const [generating, setGenerating] = useState(false);
 
     // AI inputs
+    const [savedProducts, setSavedProducts] = useState([]);
+    const [selectedProductId, setSelectedProductId] = useState('');
     const [productUrl, setProductUrl] = useState('');
+    const [productDescription, setProductDescription] = useState(''); // Physical description for AI
     const [productImages, setProductImages] = useState([]); // Array of uploaded product images (max 3)
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
@@ -52,6 +55,18 @@ export default function NewArticle() {
         }
     };
 
+    useEffect(() => {
+        // Fetch saved products
+        fetch('/api/products')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    setSavedProducts(data.products);
+                }
+            })
+            .catch(err => console.error('Error fetching products:', err));
+    }, []);
+
     const handleProductImagesUpload = (e) => {
         const files = Array.from(e.target.files);
         if (files.length > 3) {
@@ -76,6 +91,26 @@ export default function NewArticle() {
         setProductImages(prev => prev.filter((_, i) => i !== index));
     };
 
+    const handleProductSelect = (e) => {
+        const id = e.target.value;
+        setSelectedProductId(id);
+
+        if (id) {
+            const product = savedProducts.find(p => p.id.toString() === id);
+            if (product) {
+                setProductUrl(product.url);
+                setProductDescription(product.description || '');
+                if (product.images && product.images.length > 0) {
+                    setProductImages(product.images);
+                }
+            }
+        } else {
+            setProductUrl('');
+            setProductDescription('');
+            setProductImages([]);
+        }
+    };
+
     const handleAIGenerate = async () => {
         if (!productUrl) {
             alert('Please enter a product URL');
@@ -97,6 +132,7 @@ export default function NewArticle() {
                     mode: aiMode,
                     productUrl,
                     productImages: productImages.length > 0 ? productImages : null,
+                    productDescription, // Pass physical description
                     imageUrl: imagePreview || null
                 })
             });
@@ -144,6 +180,7 @@ export default function NewArticle() {
                     hook: formData.hook,
                     productUrl,
                     productImages: productImages.length > 0 ? productImages : null,
+                    productDescription, // Pass physical description
                     productTitle: formData.title // Pass title as context
                 })
             });
@@ -359,6 +396,37 @@ export default function NewArticle() {
                             </button>
                         </div>
 
+                        {/* Saved Product Selector */}
+                        {savedProducts.length > 0 && (
+                            <div style={{ marginBottom: '24px', padding: '16px', background: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#0369a1' }}>
+                                    📦 Load Saved Product (Optional)
+                                </label>
+                                <select
+                                    value={selectedProductId}
+                                    onChange={handleProductSelect}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px',
+                                        borderRadius: '6px',
+                                        border: '1px solid #bae6fd',
+                                        background: 'white',
+                                        fontSize: '14px'
+                                    }}
+                                >
+                                    <option value="">-- Select a saved product --</option>
+                                    {savedProducts.map(p => (
+                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                    ))}
+                                </select>
+                                <div style={{ marginTop: '8px', textAlign: 'right' }}>
+                                    <Link href="/admin/products" style={{ fontSize: '12px', color: '#0284c7', textDecoration: 'none' }}>
+                                        Manage Products →
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Product URL Input */}
                         <div style={{ marginBottom: '16px' }}>
                             <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
@@ -381,6 +449,27 @@ export default function NewArticle() {
                             <small style={{ color: '#6b7280', fontSize: '13px' }}>
                                 This will be used as the CTA link in the article
                             </small>
+                        </div>
+
+                        {/* Product Description Input */}
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
+                                Physical Description (for AI)
+                            </label>
+                            <textarea
+                                value={productDescription}
+                                onChange={(e) => setProductDescription(e.target.value)}
+                                placeholder="Describe the product appearance for the AI (e.g., Blue microfiber cloth, 12x12 inches, waffle texture)"
+                                rows={3}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px',
+                                    border: '2px solid #e5e7eb',
+                                    borderRadius: '8px',
+                                    fontSize: '14px',
+                                    background: '#f9fafb'
+                                }}
+                            />
                         </div>
 
                         {/* Product Images Upload (Max 3) */}

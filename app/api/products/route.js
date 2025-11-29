@@ -1,0 +1,52 @@
+import { NextResponse } from 'next/server';
+import { getProducts, createProduct } from '@/lib/db';
+
+export async function GET() {
+    try {
+        const products = await getProducts();
+        return NextResponse.json({ success: true, products });
+    } catch (error) {
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+}
+
+export async function POST(request) {
+    try {
+        const data = await request.json();
+
+        if (!data.name || !data.url) {
+            return NextResponse.json({ success: false, error: 'Name and URL are required' }, { status: 400 });
+        }
+
+        // Handle image uploads if they are base64 strings
+        let processedImages = [];
+        if (data.images && Array.isArray(data.images)) {
+            const uploadPromises = data.images.map(async (img) => {
+                if (img.startsWith('data:image')) {
+                    // Convert base64 to buffer
+                    const base64Data = img.split(',')[1];
+                    const buffer = Buffer.from(base64Data, 'base64');
+                    const filename = `product-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+
+                    const blob = await put(filename, buffer, {
+                        access: 'public',
+                        contentType: 'image/jpeg'
+                    });
+                    return blob.url;
+                }
+                return img; // Already a URL
+            });
+            processedImages = await Promise.all(uploadPromises);
+        }
+
+        const productData = {
+            ...data,
+            images: processedImages
+        };
+
+        const product = await createProduct(productData);
+        return NextResponse.json({ success: true, product });
+    } catch (error) {
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+}
