@@ -549,6 +549,23 @@ Return ONLY a JSON array of 2 strings: ["prompt 1", "prompt 2"]`;
         }
     }
 
+    // FINAL SAFETY CHECK: Scan Image 1 for product keywords and force override if found
+    if (articleData.image_prompts && articleData.image_prompts.length > 0) {
+        const image1 = articleData.image_prompts[0].toLowerCase();
+        const productKeywords = ['bottle', 'product', 'cleaning', 'spray', 'container', 'package', 'shelf', 'label', 'brand', 'solution', 'detergent', 'cleaner', 'supplies'];
+        const hasProduct = productKeywords.some(kw => image1.includes(kw));
+
+        if (hasProduct) {
+            console.warn('⚠️ FINAL CHECK: Image 1 still contains products! Force overriding...');
+            console.warn('Problematic prompt:', articleData.image_prompts[0]);
+
+            // Nuclear option: hardcoded problem-only prompt
+            articleData.image_prompts[0] = 'Close-up of worried Indian family in their living room, concerned and fearful expressions, looking around their home with anxiety. Dimly lit room with ominous shadows. Subtle danger symbols visible (warning icons, hazard signs). Child appearing unwell, parents with protective body language. Dramatic lighting emphasizing hidden threat and danger. Photorealistic, emotional, candid photography. NO products, NO bottles, NO cleaning supplies, NO items visible.';
+
+            console.log('✅ FORCED OVERRIDE: Replaced with problem-only prompt');
+        }
+    }
+
     // Generate images in parallel
     if (articleData.image_prompts && articleData.image_prompts.length > 0) {
         const imagePromises = articleData.image_prompts.map(prompt => generateImage(prompt, productDescription));
