@@ -152,6 +152,7 @@ export default function NewArticle() {
             if (aiMode === 'product') {
                 payload.productImages = productImages;
                 payload.productDescription = productDescription;
+                payload.productMainImage = formData.product_main_image; // Add main image for Image 2 generation
             } else {
                 // Convert file to base64 for creative mode
                 const reader = new FileReader();

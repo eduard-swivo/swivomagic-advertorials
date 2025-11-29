@@ -167,7 +167,7 @@ async function generateImage(prompt, productDescription = '') {
 
 // Generate article from product link
 // Generate article from product link
-async function generateFromProductLink(productUrl, productImages = null, productDescription = null, angle = 'before-after') {
+async function generateFromProductLink(productUrl, productImages = null, productDescription = null, angle = 'before-after', productMainImage = null) {
     const productData = await scrapeProductPage(productUrl);
 
     // Build the prompt with product image context if available
@@ -177,8 +177,12 @@ async function generateFromProductLink(productUrl, productImages = null, product
         promptAddition += `\n\nPHYSICAL PRODUCT DESCRIPTION: "${productDescription}"\n(Use this EXACT description for all visual details in the story and image prompts. Do not hallucinate colors or features.)`;
     }
 
+    if (productMainImage) {
+        promptAddition += `\n\n**PRODUCT MAIN IMAGE PROVIDED**: You have access to the main product image. For IMAGE 2, you MUST base the product appearance on this exact image. Describe the product as it appears in the main image with precise visual details.`;
+    }
+
     if (productImages && productImages.length > 0) {
-        promptAddition += `\n\nPRODUCT IMAGES PROVIDED: You have access to ${productImages.length} product image(s). Use them to create more accurate image prompts that show the real product in before/after scenarios.`;
+        promptAddition += `\n\nADDITIONAL PRODUCT IMAGES: You have access to ${productImages.length} additional product image(s). Use them for context.`;
     }
 
     // Angle Instructions
@@ -280,12 +284,13 @@ Generate a complete advertorial with:
    **IMAGE 2 - SOLUTION/PRODUCT:**
    - Follow the instruction: "${selectedAngleInstruction.split('Image 2: ')[1]}"
    - Reference the actual product: "${productData.title}"
+   ${productMainImage ? '- **CRITICAL: You have seen the MAIN PRODUCT IMAGE. Describe the product in Image 2 EXACTLY as it appears in that main image. Match colors, shape, size, packaging, and all visual details precisely.**' : ''}
    - This is where you show the product and the solution
    
    **GENERAL RULES:**
    - IMPORTANT: If showing people, specify "Indian household" or "Indian family"
    - Use dramatic lighting, close-ups, or striking scenarios
-   ${productImages && productImages.length > 0 ? '- You have seen the product images, so describe the product accurately in the prompts' : ''}
+   ${productMainImage || (productImages && productImages.length > 0) ? '- You have seen the product image(s), so describe the product accurately in the prompts' : ''}
    - Focus on evoking emotion and curiosity
 
 Also suggest:
@@ -324,17 +329,21 @@ Return ONLY valid JSON in this exact format:
         { role: "system", content: SYSTEM_PROMPT }
     ];
 
-    if (productImages && productImages.length > 0) {
+    // Prioritize productMainImage, then add additional productImages
+    const allImages = [];
+    if (productMainImage) allImages.push(productMainImage);
+    if (productImages && productImages.length > 0) allImages.push(...productImages);
+
+    if (allImages.length > 0) {
         const contentParts = [{ type: "text", text: prompt }];
 
         // Add all product images to the content
-        productImages.forEach(imageData => {
+        allImages.forEach(imageData => {
             contentParts.push({
                 type: "image_url",
                 image_url: { url: imageData }
             });
         });
-
         messages.push({
             role: "user",
             content: contentParts
@@ -434,7 +443,7 @@ Generate the same JSON structure as before with headline, slug, hook, story, ben
 // API Route Handler
 export async function POST(request) {
     try {
-        const { mode, productUrl, productImages, productDescription, imageUrl, angle } = await request.json();
+        const { mode, productUrl, productImages, productDescription, productMainImage, imageUrl, angle } = await request.json();
 
         console.log('Generating article in mode:', mode, 'with angle:', angle);
 
@@ -448,7 +457,7 @@ export async function POST(request) {
         let articleData;
 
         if (mode === 'product') {
-            articleData = await generateFromProductLink(productUrl, productImages, productDescription, angle);
+            articleData = await generateFromProductLink(productUrl, productImages, productDescription, angle, productMainImage);
         } else if (mode === 'creative') {
             if (!imageUrl) {
                 return NextResponse.json(
