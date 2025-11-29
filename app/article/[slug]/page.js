@@ -4,27 +4,10 @@ import CommentSection from '@/components/CommentSection';
 import StickyCTA from '@/components/StickyCTA';
 import { notFound } from 'next/navigation';
 
-async function getArticle(slug) {
-    try {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-        const res = await fetch(`${baseUrl}/api/articles/${slug}`, {
-            cache: 'no-store'
-        });
-
-        if (!res.ok) {
-            return null;
-        }
-
-        const data = await res.json();
-        return data.success ? data.article : null;
-    } catch (error) {
-        console.error('Error fetching article:', error);
-        return null;
-    }
-}
+import { getArticleBySlug } from '@/lib/db';
 
 export default async function ArticlePage({ params }) {
-    const article = await getArticle(params.slug);
+    const article = await getArticleBySlug(params.slug);
 
     if (!article) {
         notFound();
@@ -111,7 +94,7 @@ export default async function ArticlePage({ params }) {
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }) {
-    const article = await getArticle(params.slug);
+    const article = await getArticleBySlug(params.slug);
 
     if (!article) {
         return {

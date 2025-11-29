@@ -1,29 +1,13 @@
 import Link from 'next/link';
 import Footer from '@/components/Footer';
 
-async function getArticles() {
-    try {
-        // In production, use full URL; in development, use relative
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-        const res = await fetch(`${baseUrl}/api/articles`, {
-            cache: 'no-store' // Always fetch fresh data
-        });
+import { getAllArticles } from '@/lib/db';
 
-        if (!res.ok) {
-            console.error('Failed to fetch articles');
-            return [];
-        }
-
-        const data = await res.json();
-        return data.success ? data.articles : [];
-    } catch (error) {
-        console.error('Error fetching articles:', error);
-        return [];
-    }
-}
+// No need for fetch helper anymore
+// Direct DB access is better for Server Components
 
 export default async function Home() {
-    const articles = await getArticles();
+    const articles = await getAllArticles();
 
     return (
         <>
