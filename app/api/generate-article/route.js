@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { put } from '@vercel/blob';
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
@@ -109,7 +111,8 @@ async function generateImage(prompt) {
                 ],
                 parameters: {
                     sampleCount: 1,
-                    aspectRatio: "1:1"
+                    aspectRatio: "4:3",
+                    outputOptions: { mimeType: "image/jpeg" }
                 }
             },
             { headers: { 'Content-Type': 'application/json' } }
@@ -120,7 +123,15 @@ async function generateImage(prompt) {
         }
 
         const base64Image = response.data.predictions[0].bytesBase64Encoded;
-        return `data:image/png;base64,${base64Image}`;
+        const buffer = Buffer.from(base64Image, 'base64');
+
+        // Upload to Vercel Blob
+        const filename = `ai-generated-${Date.now()}.jpg`;
+        const blob = await put(filename, buffer, {
+            access: 'public',
+        });
+
+        return blob.url;
 
     } catch (error) {
         console.error('Google Imagen generation error:', error.response?.data || error.message);
@@ -132,10 +143,20 @@ async function generateImage(prompt) {
                 model: "dall-e-3",
                 prompt: prompt + " photorealistic, 4k, highly detailed, editorial photography style, natural lighting",
                 n: 1,
-                size: "1024x1024",
+                size: "1792x1024", // Landscape (closest to 4:3)
                 quality: "standard",
             });
-            return response.data[0].url;
+
+            const dalleUrl = response.data[0].url;
+
+            // Fetch DALL-E image and upload to Blob
+            const imageRes = await axios.get(dalleUrl, { responseType: 'arraybuffer' });
+            const filename = `dalle-fallback-${Date.now()}.png`;
+            const blob = await put(filename, imageRes.data, {
+                access: 'public',
+            });
+
+            return blob.url;
         } catch (dalleError) {
             console.error('DALL-E 3 fallback error:', dalleError);
             return null;

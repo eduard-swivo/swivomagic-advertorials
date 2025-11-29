@@ -97,7 +97,12 @@ You need to add the API keys to Vercel:
 3. Add new variables:
    - **OPENAI_API_KEY**: `sk-proj-...` (for text)
    - **GOOGLE_API_KEY**: `AIzaSy...` (for images)
-4. Save and redeploy
+4. **Setup Vercel Blob:**
+   - Go to "Storage" tab in Vercel.
+   - Click "Create Database" -> select "Blob".
+   - Name it (e.g., `swivomagic-blob`).
+   - Once created, the `BLOB_READ_WRITE_TOKEN` will be automatically added to your environment variables.
+5. Save and redeploy
 
 ### **Local Development:**
 Already configured in `.env.local`

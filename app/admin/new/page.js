@@ -387,9 +387,9 @@ export default function NewArticle() {
                                 🎨 AI Generated Images
                             </h3>
                             <p style={{ marginBottom: '16px', color: '#15803d', fontSize: '14px' }}>
-                                <strong>Right-click and "Save Image As"</strong> to download these. Then upload them to your <code>/public/images/</code> folder.
+                                <strong>Images are automatically saved to Vercel Blob!</strong>
                                 <br />
-                                <small>⚠️ These links expire in 1 hour!</small>
+                                Click "Use as Hero" to instantly set an image as the article's hero image.
                             </p>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
                                 {generatedImages.map((url, i) => (
@@ -404,14 +404,42 @@ export default function NewArticle() {
                                                 border: '1px solid #bbf7d0'
                                             }}
                                         />
-                                        <div style={{
-                                            marginTop: '8px',
-                                            fontSize: '12px',
-                                            color: '#166534',
-                                            fontWeight: '600',
-                                            textAlign: 'center'
-                                        }}>
-                                            Image {i + 1}
+                                        <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({ ...prev, hero_image: url }))}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '8px',
+                                                    background: '#166534',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '6px',
+                                                    fontSize: '13px',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Use as Hero
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(url);
+                                                    alert('URL copied!');
+                                                }}
+                                                style={{
+                                                    padding: '8px',
+                                                    background: 'white',
+                                                    color: '#166534',
+                                                    border: '1px solid #166534',
+                                                    borderRadius: '6px',
+                                                    fontSize: '13px',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Copy URL
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
@@ -567,39 +595,41 @@ export default function NewArticle() {
                     {/* Benefits */}
                     <h2 style={{ marginTop: '40px', marginBottom: '24px', color: '#111' }}>Benefits Section</h2>
 
-                    {formData.benefits.map((benefit, index) => (
-                        <div key={index} className="benefit-item">
-                            <div className="benefit-header">
-                                <h4>Benefit {index + 1}</h4>
-                                {formData.benefits.length > 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => removeBenefit(index)}
-                                        className="btn-remove"
-                                    >
-                                        Remove
-                                    </button>
-                                )}
+                    {
+                        formData.benefits.map((benefit, index) => (
+                            <div key={index} className="benefit-item">
+                                <div className="benefit-header">
+                                    <h4>Benefit {index + 1}</h4>
+                                    {formData.benefits.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => removeBenefit(index)}
+                                            className="btn-remove"
+                                        >
+                                            Remove
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="form-group" style={{ marginBottom: '12px' }}>
+                                    <label>Title</label>
+                                    <input
+                                        type="text"
+                                        value={benefit.title}
+                                        onChange={(e) => handleBenefitChange(index, 'title', e.target.value)}
+                                        placeholder="e.g., The Zero-Streak Glass Hack"
+                                    />
+                                </div>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                    <label>Description</label>
+                                    <textarea
+                                        value={benefit.description}
+                                        onChange={(e) => handleBenefitChange(index, 'description', e.target.value)}
+                                        placeholder="Detailed description of this benefit"
+                                    />
+                                </div>
                             </div>
-                            <div className="form-group" style={{ marginBottom: '12px' }}>
-                                <label>Title</label>
-                                <input
-                                    type="text"
-                                    value={benefit.title}
-                                    onChange={(e) => handleBenefitChange(index, 'title', e.target.value)}
-                                    placeholder="e.g., The Zero-Streak Glass Hack"
-                                />
-                            </div>
-                            <div className="form-group" style={{ marginBottom: 0 }}>
-                                <label>Description</label>
-                                <textarea
-                                    value={benefit.description}
-                                    onChange={(e) => handleBenefitChange(index, 'description', e.target.value)}
-                                    placeholder="Detailed description of this benefit"
-                                />
-                            </div>
-                        </div>
-                    ))}
+                        ))
+                    }
 
                     <button type="button" onClick={addBenefit} className="btn-add">
                         + Add Benefit
@@ -681,8 +711,8 @@ export default function NewArticle() {
                             Cancel
                         </Link>
                     </div>
-                </form>
+                </form >
             )}
-        </div>
+        </div >
     );
 }
