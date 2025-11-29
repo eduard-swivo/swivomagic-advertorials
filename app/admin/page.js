@@ -47,6 +47,15 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleLogout = async () => {
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            window.location.href = '/admin/login';
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    };
+
     if (loading) {
         return <div className="admin-container"><p>Loading...</p></div>;
     }
@@ -56,6 +65,9 @@ export default function AdminDashboard() {
             <header className="admin-header">
                 <h1>Article Management</h1>
                 <div className="admin-actions">
+                    <button onClick={handleLogout} className="btn-secondary">
+                        Logout
+                    </button>
                     <Link href="/admin/new" className="btn-primary">
                         + New Article
                     </Link>
