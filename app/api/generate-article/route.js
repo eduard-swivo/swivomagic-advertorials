@@ -202,7 +202,15 @@ Generate a complete advertorial with:
    - Text: Scarcity, urgency, or social proof
 
 6. CTA TEXT: Action-oriented, benefit-driven button text
-7. SUPPORTING IMAGES: Create 2 distinct, detailed prompts for photorealistic images that would support this story (e.g., "close up of dirty vs clean window", "happy family in living room").
+
+7. COMMENTS SECTION (5-7 comments):
+   - Create realistic user comments
+   - Use "Hinglish" style (mix of Hindi and English)
+   - Approx 10% Hindi words/phrases, 90% English
+   - Examples: "Bhai, this is amazing", "Maine order kiya tha, delivery fast thi", "Iska price kya hai?"
+   - Make them sound authentic and varied (some questions, some praise)
+
+8. SUPPORTING IMAGES: Create 2 distinct, detailed prompts for photorealistic images that would support this story (e.g., "close up of dirty vs clean window", "happy family in living room").
 
 Also suggest:
 - CATEGORY: "Lifestyle" or "Health & Family"
@@ -228,6 +236,9 @@ Return ONLY valid JSON in this exact format:
     "title": "urgency title",
     "text": "urgency text"
   },
+  "comments": [
+    {"name": "User Name", "text": "Comment text here", "time": "2 min ago"}
+  ],
   "cta_text": "CTA BUTTON TEXT >>",
   "image_prompts": ["prompt 1", "prompt 2"]
 }`;
@@ -283,7 +294,7 @@ Create an advertorial that:
 4. Delivers on the ad's promise
 
 Include 2 detailed prompts for supporting images in the 'image_prompts' array.
-Generate the same JSON structure as before with headline, hook, story, benefits, urgency box, and CTA.`
+Generate the same JSON structure as before with headline, hook, story, benefits, urgency box, comments (Hinglish), and CTA.`
                     },
                     {
                         type: "image_url",

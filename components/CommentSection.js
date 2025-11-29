@@ -1,5 +1,5 @@
-export default function CommentSection() {
-    const comments = [
+export default function CommentSection({ comments: dynamicComments }) {
+    const defaultComments = [
         {
             id: 1,
             name: "Anjali Gupta",
@@ -7,35 +7,19 @@ export default function CommentSection() {
             text: "I was skeptical at first, but this actually works! My kitchen smells amazing now.",
             likes: 14
         },
-        {
-            id: 2,
-            name: "Meera Patel",
-            time: "3 days ago",
-            text: "Finally something safe for my pets. The Lavender scent is divine.",
-            likes: 23
-        },
-        {
-            id: 3,
-            name: "Sneha Reddy",
-            time: "4 days ago",
-            text: "Ordered the kit last week and it arrived in 2 days. The bottles are so high quality!",
-            likes: 8
-        },
-        {
-            id: 4,
-            name: "Divya Singh",
-            time: "5 days ago",
-            text: "My husband usually hates cleaning smells, but he actually likes this one. Win-win!",
-            likes: 19
-        },
-        {
-            id: 5,
-            name: "Kavita Joshi",
-            time: "1 week ago",
-            text: "Just threw away all my bleach. Never going back.",
-            likes: 45
-        }
+        // ... (keep other defaults if needed, or just replace)
     ];
+
+    // Use dynamic comments if available, otherwise default
+    const comments = dynamicComments && dynamicComments.length > 0
+        ? dynamicComments.map((c, i) => ({
+            id: i,
+            name: c.name,
+            time: c.time,
+            text: c.text,
+            likes: c.likes || Math.floor(Math.random() * 50) + 5 // Random likes if not provided
+        }))
+        : defaultComments;
 
     return (
         <div className="comment-section">

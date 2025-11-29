@@ -34,6 +34,7 @@ export default async function ArticlePage({ params }) {
     const story = typeof article.story === 'string' ? JSON.parse(article.story) : article.story;
     const benefits = typeof article.benefits === 'string' ? JSON.parse(article.benefits) : article.benefits;
     const urgencyBox = typeof article.urgency_box === 'string' ? JSON.parse(article.urgency_box) : article.urgency_box;
+    const comments = typeof article.comments === 'string' ? JSON.parse(article.comments) : article.comments;
 
     return (
         <>
@@ -90,7 +91,7 @@ export default async function ArticlePage({ params }) {
                     {article.cta_text}
                 </a>
 
-                <CommentSection />
+                <CommentSection comments={comments} />
             </div>
             <StickyCTA href={article.cta_link} />
             <Footer />

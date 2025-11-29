@@ -32,6 +32,7 @@ export default function NewArticle() {
         story: [''],
         benefits: [{ title: '', description: '' }],
         urgency_box: { title: '', text: '' },
+        comments: [],
         cta_link: '',
         cta_text: 'CHECK AVAILABILITY >>',
         published: true
@@ -146,6 +147,26 @@ export default function NewArticle() {
         setFormData(prev => ({
             ...prev,
             benefits: prev.benefits.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleCommentChange = (index, field, value) => {
+        const newComments = [...formData.comments];
+        newComments[index][field] = value;
+        setFormData(prev => ({ ...prev, comments: newComments }));
+    };
+
+    const addComment = () => {
+        setFormData(prev => ({
+            ...prev,
+            comments: [...prev.comments, { name: 'New User', text: '', time: 'Just now' }]
+        }));
+    };
+
+    const removeComment = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            comments: prev.comments.filter((_, i) => i !== index)
         }));
     };
 
@@ -691,6 +712,57 @@ export default function NewArticle() {
                             placeholder="Final push to action"
                         />
                     </div>
+
+                    {/* Comments Section */}
+                    <h2 style={{ marginTop: '40px', marginBottom: '24px', color: '#111' }}>Comments Section</h2>
+
+                    {formData.comments && formData.comments.map((comment, index) => (
+                        <div key={index} className="benefit-item" style={{ background: '#f9fafb' }}>
+                            <div className="benefit-header">
+                                <h4>Comment {index + 1}</h4>
+                                <button
+                                    type="button"
+                                    onClick={() => removeComment(index)}
+                                    className="btn-remove"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                    <label>Name</label>
+                                    <input
+                                        type="text"
+                                        value={comment.name}
+                                        onChange={(e) => handleCommentChange(index, 'name', e.target.value)}
+                                        placeholder="User Name"
+                                    />
+                                </div>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                    <label>Time</label>
+                                    <input
+                                        type="text"
+                                        value={comment.time}
+                                        onChange={(e) => handleCommentChange(index, 'time', e.target.value)}
+                                        placeholder="e.g. 2 min ago"
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Comment Text</label>
+                                <textarea
+                                    value={comment.text}
+                                    onChange={(e) => handleCommentChange(index, 'text', e.target.value)}
+                                    placeholder="Comment content..."
+                                    rows={2}
+                                />
+                            </div>
+                        </div>
+                    ))}
+
+                    <button type="button" onClick={addComment} className="btn-add">
+                        + Add Comment
+                    </button>
 
                     {/* CTA */}
                     <h2 style={{ marginTop: '40px', marginBottom: '24px', color: '#111' }}>Call to Action</h2>
