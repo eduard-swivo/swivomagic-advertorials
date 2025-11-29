@@ -8,6 +8,7 @@ export default function AdminDashboard() {
     const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
+    const [sortOrder, setSortOrder] = useState('newest'); // 'newest' or 'oldest'
 
     useEffect(() => {
         fetchArticles();
@@ -26,6 +27,18 @@ export default function AdminDashboard() {
             setLoading(false);
         }
     };
+
+    // Sort articles based on sortOrder
+    const sortedArticles = [...articles].sort((a, b) => {
+        const dateA = new Date(a.created_at || a.published_date);
+        const dateB = new Date(b.created_at || b.published_date);
+
+        if (sortOrder === 'newest') {
+            return dateB - dateA; // Newest first
+        } else {
+            return dateA - dateB; // Oldest first
+        }
+    });
 
     const handleDelete = async (slug) => {
         if (!confirm('Are you sure you want to delete this article?')) return;
@@ -82,6 +95,25 @@ export default function AdminDashboard() {
             )}
 
             <div className="articles-table">
+                {/* Sort Control */}
+                <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <label style={{ fontWeight: '600', color: '#374151' }}>Sort by:</label>
+                    <select
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                        style={{
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: '1px solid #d1d5db',
+                            fontSize: '14px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                    </select>
+                </div>
+
                 <table>
                     <thead>
                         <tr>
@@ -94,14 +126,14 @@ export default function AdminDashboard() {
                         </tr>
                     </thead>
                     <tbody>
-                        {articles.length === 0 ? (
+                        {sortedArticles.length === 0 ? (
                             <tr>
                                 <td colSpan="6" style={{ textAlign: 'center', padding: '40px' }}>
                                     No articles yet. Click "Initialize Database" first, then create your first article!
                                 </td>
                             </tr>
                         ) : (
-                            articles.map((article) => (
+                            sortedArticles.map((article) => (
                                 <tr key={article.id}>
                                     <td>{article.title}</td>
                                     <td>{article.category}</td>
