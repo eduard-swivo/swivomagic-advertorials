@@ -870,27 +870,157 @@ export default function NewArticle() {
 
                     <div className="form-group">
                         <label>Hero Image URL *</label>
-                        <input
-                            type="text"
-                            name="hero_image"
-                            value={formData.hero_image}
-                            onChange={handleChange}
-                            required
-                            placeholder="/images/motorist-hero.jpg"
-                        />
-                        <small>Upload image to /public/images/ first</small>
+                        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                            <div style={{ flex: 1 }}>
+                                <input
+                                    type="text"
+                                    name="hero_image"
+                                    value={formData.hero_image}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder="/images/motorist-hero.jpg"
+                                />
+                                <small>Upload image to /public/images/ first</small>
+                            </div>
+                            {formData.hero_image && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                                    <img
+                                        src={formData.hero_image}
+                                        alt="Hero preview"
+                                        style={{
+                                            width: '200px',
+                                            height: '120px',
+                                            objectFit: 'cover',
+                                            borderRadius: '8px',
+                                            border: '2px solid #e5e7eb'
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            if (!formData.hook) {
+                                                alert('Please generate the article first to have a hook for image generation.');
+                                                return;
+                                            }
+                                            setGenerating(true);
+                                            try {
+                                                const res = await fetch('/api/regenerate-images', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({
+                                                        hook: formData.hook,
+                                                        productUrl,
+                                                        productImages: productImages.length > 0 ? productImages : null,
+                                                        productDescription,
+                                                        productTitle: formData.title,
+                                                        imageIndex: 0 // Only regenerate first image
+                                                    })
+                                                });
+                                                const data = await res.json();
+                                                if (data.success && data.images && data.images[0]) {
+                                                    setFormData(prev => ({ ...prev, hero_image: data.images[0].url || data.images[0] }));
+                                                }
+                                            } catch (error) {
+                                                console.error('Error:', error);
+                                                alert('Failed to regenerate image');
+                                            } finally {
+                                                setGenerating(false);
+                                            }
+                                        }}
+                                        disabled={generating}
+                                        style={{
+                                            padding: '6px 12px',
+                                            background: generating ? '#9ca3af' : '#3b82f6',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            fontSize: '12px',
+                                            cursor: generating ? 'not-allowed' : 'pointer',
+                                            fontWeight: '600'
+                                        }}
+                                    >
+                                        {generating ? '🔄 Regenerating...' : '🔄 Regenerate'}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="form-group">
                         <label>Second Image URL (Solution)</label>
-                        <input
-                            type="text"
-                            name="second_image"
-                            value={formData.second_image}
-                            onChange={handleChange}
-                            placeholder="URL for the solution/transformation image"
-                        />
-                        <small>Displayed before the Benefits section</small>
+                        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                            <div style={{ flex: 1 }}>
+                                <input
+                                    type="text"
+                                    name="second_image"
+                                    value={formData.second_image}
+                                    onChange={handleChange}
+                                    placeholder="URL for the solution/transformation image"
+                                />
+                                <small>Displayed before the Benefits section</small>
+                            </div>
+                            {formData.second_image && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                                    <img
+                                        src={formData.second_image}
+                                        alt="Second image preview"
+                                        style={{
+                                            width: '200px',
+                                            height: '120px',
+                                            objectFit: 'cover',
+                                            borderRadius: '8px',
+                                            border: '2px solid #e5e7eb'
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            if (!formData.hook) {
+                                                alert('Please generate the article first to have a hook for image generation.');
+                                                return;
+                                            }
+                                            setGenerating(true);
+                                            try {
+                                                const res = await fetch('/api/regenerate-images', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({
+                                                        hook: formData.hook,
+                                                        productUrl,
+                                                        productImages: productImages.length > 0 ? productImages : null,
+                                                        productDescription,
+                                                        productTitle: formData.title,
+                                                        imageIndex: 1 // Only regenerate second image
+                                                    })
+                                                });
+                                                const data = await res.json();
+                                                if (data.success && data.images && data.images[1]) {
+                                                    setFormData(prev => ({ ...prev, second_image: data.images[1].url || data.images[1] }));
+                                                }
+                                            } catch (error) {
+                                                console.error('Error:', error);
+                                                alert('Failed to regenerate image');
+                                            } finally {
+                                                setGenerating(false);
+                                            }
+                                        }}
+                                        disabled={generating}
+                                        style={{
+                                            padding: '6px 12px',
+                                            background: generating ? '#9ca3af' : '#10b981',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            fontSize: '12px',
+                                            cursor: generating ? 'not-allowed' : 'pointer',
+                                            fontWeight: '600'
+                                        }}
+                                    >
+                                        {generating ? '🔄 Regenerating...' : '🔄 Regenerate'}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="form-group">
