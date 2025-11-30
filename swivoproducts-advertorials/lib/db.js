@@ -46,7 +46,6 @@ export async function initDatabase() {
             await sql`ALTER TABLE articles ADD COLUMN IF NOT EXISTS second_image TEXT;`;
             await sql`ALTER TABLE articles ADD COLUMN IF NOT EXISTS product_main_image TEXT;`;
             await sql`ALTER TABLE product_profiles ADD COLUMN IF NOT EXISTS main_image TEXT;`;
-            await sql`ALTER TABLE articles ADD COLUMN IF NOT EXISTS countdown_timer JSONB;`;
         } catch (e) {
             console.log('Migration note:', e.message);
         }
@@ -125,7 +124,6 @@ export async function createArticle(articleData) {
             comments,
             cta_link,
             cta_text,
-            countdown_timer,
             published = true
         } = articleData;
 
@@ -133,13 +131,13 @@ export async function createArticle(articleData) {
       INSERT INTO articles (
         slug, title, category, author, published_date, excerpt,
         hero_image, second_image, product_main_image, advertorial_label, hook, story, benefits,
-        urgency_box, comments, cta_link, cta_text, countdown_timer, published
+        urgency_box, comments, cta_link, cta_text, published
       ) VALUES (
         ${slug}, ${title}, ${category}, ${author}, ${published_date},
         ${excerpt}, ${hero_image}, ${second_image}, ${product_main_image || null}, ${advertorial_label}, ${hook},
         ${JSON.stringify(story)}, ${JSON.stringify(benefits)},
         ${JSON.stringify(urgency_box)}, ${JSON.stringify(comments || [])}, 
-        ${cta_link}, ${cta_text}, ${JSON.stringify(countdown_timer || { enabled: false, minutes: 20 })}, ${published}
+        ${cta_link}, ${cta_text}, ${published}
       )
       RETURNING *
     `;
@@ -171,7 +169,6 @@ export async function updateArticle(slug, articleData) {
             comments,
             cta_link,
             cta_text,
-            countdown_timer,
             published
         } = articleData;
 
@@ -193,7 +190,6 @@ export async function updateArticle(slug, articleData) {
         comments = ${JSON.stringify(comments || [])},
         cta_link = ${cta_link},
         cta_text = ${cta_text},
-        countdown_timer = ${JSON.stringify(countdown_timer || { enabled: false, minutes: 20 })},
         published = ${published},
         updated_at = NOW()
       WHERE slug = ${slug}

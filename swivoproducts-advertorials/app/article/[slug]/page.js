@@ -3,7 +3,6 @@ import ArticleMeta from '@/components/ArticleMeta';
 import CommentSection from '@/components/CommentSection';
 import StickyCTA from '@/components/StickyCTA';
 import SafeImage from '@/components/SafeImage';
-import CountdownTimer from '@/components/CountdownTimer';
 import { notFound } from 'next/navigation';
 
 import { getArticleBySlug } from '@/lib/db';
@@ -36,7 +35,6 @@ export default async function ArticlePage({ params }) {
     const benefits = typeof article.benefits === 'string' ? JSON.parse(article.benefits) : article.benefits;
     const urgencyBox = typeof article.urgency_box === 'string' ? JSON.parse(article.urgency_box) : article.urgency_box;
     const comments = typeof article.comments === 'string' ? JSON.parse(article.comments) : article.comments;
-    const countdownTimer = typeof article.countdown_timer === 'string' ? JSON.parse(article.countdown_timer) : article.countdown_timer;
 
     return (
         <>
@@ -95,18 +93,8 @@ export default async function ArticlePage({ params }) {
                         backgroundColor: '#f8f9fa',
                         padding: '20px',
                         borderRadius: '10px',
-                        marginTop: '30px',
-                        position: 'relative'
+                        marginTop: '30px'
                     }}>
-                        {countdownTimer?.enabled && (
-                            <div style={{
-                                position: 'absolute',
-                                top: '20px',
-                                right: '20px'
-                            }}>
-                                <CountdownTimer initialMinutes={countdownTimer.minutes || 20} />
-                            </div>
-                        )}
                         {urgencyBox.title && <h3>{urgencyBox.title}</h3>}
                         {urgencyBox.text && <p>{urgencyBox.text}</p>}
                     </div>

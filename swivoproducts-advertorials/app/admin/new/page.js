@@ -54,7 +54,6 @@ export default function NewArticle() {
         comments: [],
         cta_link: '',
         cta_text: 'CHECK AVAILABILITY >>',
-        countdown_timer: { enabled: false, minutes: 20 },
         published: true
     });
 
@@ -1130,42 +1129,6 @@ export default function NewArticle() {
                             placeholder="Final push to action"
                         />
                     </div>
-
-                    {/* Countdown Timer Settings */}
-                    <h3 style={{ marginTop: '32px', marginBottom: '16px', color: '#111', fontSize: '18px' }}>Countdown Timer</h3>
-
-                    <div className="form-group">
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <input
-                                type="checkbox"
-                                checked={formData.countdown_timer.enabled}
-                                onChange={(e) => setFormData(prev => ({
-                                    ...prev,
-                                    countdown_timer: { ...prev.countdown_timer, enabled: e.target.checked }
-                                }))}
-                                style={{ width: 'auto' }}
-                            />
-                            Enable Countdown Timer
-                        </label>
-                        <small>Display a countdown timer in the urgency box</small>
-                    </div>
-
-                    {formData.countdown_timer.enabled && (
-                        <div className="form-group">
-                            <label>Timer Duration (minutes)</label>
-                            <input
-                                type="number"
-                                min="1"
-                                max="120"
-                                value={formData.countdown_timer.minutes}
-                                onChange={(e) => setFormData(prev => ({
-                                    ...prev,
-                                    countdown_timer: { ...prev.countdown_timer, minutes: parseInt(e.target.value) || 20 }
-                                }))}
-                            />
-                            <small>Set the countdown duration in minutes (default: 20)</small>
-                        </div>
-                    )}
 
                     {/* Comments Section */}
                     <h2 style={{ marginTop: '40px', marginBottom: '24px', color: '#111' }}>Comments Section</h2>
