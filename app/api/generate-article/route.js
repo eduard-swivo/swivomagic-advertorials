@@ -100,11 +100,8 @@ async function generateImage(prompt, productDescription = '', isImage1 = false, 
         // Enhanced prompt for photorealism with Indian context + Product Description Enforcement
         let enhancedPrompt = prompt + " Indian household, Indian people, South Asian setting, raw photo, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, candid photography, no illustration, no 3d render, no cartoon, no cgi";
 
-        // AGGRESSIVE NEGATIVE PROMPTS for Image 1 (Problem-only images)
-        if (isImage1 || prompt.toLowerCase().includes('no product')) {
-            enhancedPrompt += ". CRITICAL EXCLUSIONS: absolutely no bottles, no spray bottles, no cleaning products, no containers, no packages, no labels, no branded items, no solutions, no detergents, no cleaners, no supplies, no items on shelves, no items on tables, no items on counters. Focus only on people and environment.";
-            console.log('🚫 Added aggressive negative prompts for Image 1');
-        }
+        // Note: Removed aggressive negative prompts - now following visual brief exactly
+        // The visual brief should already describe what to include/exclude
 
         if (productDescription && !isImage1) {
             enhancedPrompt += `. IMPORTANT PRODUCT DETAILS: ${productDescription}. Ensure the product in the image matches this description EXACTLY.`;
