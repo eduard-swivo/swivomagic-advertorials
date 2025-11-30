@@ -188,7 +188,6 @@ a {
   text-transform: uppercase;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
   transition: background-color 0.2s, transform 0.1s;
-  animation: pulse 2s infinite;
 }
 
 .cta-button:hover {
@@ -664,7 +663,6 @@ a {
   text-transform: uppercase;
   width: 100%;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  animation: pulse 2s infinite;
 }
 
 .sticky-cta-button:hover {
