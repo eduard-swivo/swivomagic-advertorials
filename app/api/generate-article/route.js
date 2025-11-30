@@ -261,13 +261,16 @@ Generate a complete advertorial with:
 
 7. CTA TEXT: Action-oriented, benefit-driven button text
 
-8. COMMENTS SECTION (5-7 comments):
-   - Create realistic user comments
+8. COMMENTS SECTION (Generate 5-10 random comments):
+   - Create between 5 and 10 realistic user comments (random number each time)
    - Use "Hinglish" style (mix of Hindi and English)
    - Approx 10% Hindi words/phrases, 90% English
    - Examples: "Bhai, this is amazing", "Maine order kiya tha, delivery fast thi", "Iska price kya hai?"
-   - Make them sound authentic and varied (some questions, some praise)
-   - TIMESTAMPS: Must be random DAYS apart (e.g., "2 days ago", "5 days ago", "1 week ago"), NOT minutes or hours.
+   - Make them sound authentic and varied (some questions, some praise, some testimonials)
+   - TIMESTAMPS: Must be random DAYS apart, spread across 1-14 days
+   - Use varied formats: "2 days ago", "5 days ago", "1 week ago", "3 days ago", "10 days ago", "2 weeks ago"
+   - Each comment should have a DIFFERENT timestamp
+   - Sort comments by recency (most recent first)
 
 9. HERO IMAGE PROMPTS: Create 2 DRAMATIC, attention-grabbing image prompts that DIRECTLY relate to the selected ANGLE (${angle}).
    
@@ -453,9 +456,12 @@ ${productDescription ? `- Physical Description: "${productDescription}"` : ''}
 - Use conversational language
 
 **COMMENTS:**
-- Create 5-7 Hinglish comments (10% Hindi, 90% English)
-- Timestamps must be random DAYS apart (e.g., "2 days ago", "1 week ago")
-- Make them sound authentic
+- Create 5-10 Hinglish comments (random number, 10% Hindi, 90% English)
+- Timestamps must be random DAYS apart, spread across 1-14 days
+- Use varied formats: "2 days ago", "5 days ago", "1 week ago", "3 days ago", "10 days ago", "2 weeks ago"
+- Each comment should have a DIFFERENT timestamp
+- Make them sound authentic (questions, praise, testimonials)
+- Sort by recency (most recent first)
 
 **AUTHOR:**
 - Realistic Indian woman's name with abbreviated surname (e.g., "Priya S.")
