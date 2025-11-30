@@ -108,8 +108,8 @@ export default async function ArticlePage({ params }) {
                                 <CountdownTimer initialMinutes={countdownTimer.minutes || 20} />
                             </div>
                         )}
-                        {urgencyBox.title && <h3>{urgencyBox.title}</h3>}
-                        {urgencyBox.text && <p>{urgencyBox.text}</p>}
+                        {urgencyBox.title && <h3 dangerouslySetInnerHTML={{ __html: parseMarkdown(urgencyBox.title) }} />}
+                        {urgencyBox.text && <p dangerouslySetInnerHTML={{ __html: parseMarkdown(urgencyBox.text) }} />}
                     </div>
                 )}
 
