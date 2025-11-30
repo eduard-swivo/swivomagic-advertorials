@@ -392,7 +392,8 @@ export default function NewArticle() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
-                    product_images: productImages // Include uploaded/selected product images
+                    product_images: productImages, // Include uploaded/selected product images
+                    visual_brief: visualBrief // Include visual brief
                 })
             });
 
