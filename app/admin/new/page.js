@@ -25,6 +25,7 @@ export default function NewArticle() {
     const [imagePreview, setImagePreview] = useState('');
     const [generatedImages, setGeneratedImages] = useState([]); // Store DALL-E images
     const [selectedAngle, setSelectedAngle] = useState('before-after'); // Default angle
+    const [visualBrief, setVisualBrief] = useState(''); // Store visual brief from ad creative analysis
 
     const angles = [
         { id: 'in-use', label: 'Product In Use', description: 'Focus on the mechanism and action' },
@@ -208,6 +209,11 @@ export default function NewArticle() {
                     // Show generated images if available
                     if (generatedImgs.length > 0) {
                         setGeneratedImages(generatedImgs);
+                    }
+
+                    // Store visual brief if available (from ad creative mode)
+                    if (data.article.visual_brief) {
+                        setVisualBrief(data.article.visual_brief);
                     }
 
                     setMode('manual'); // Switch to manual mode to review/edit
@@ -698,6 +704,50 @@ export default function NewArticle() {
                                                 border: '2px solid #e5e7eb'
                                             }}
                                         />
+                                    </div>
+                                )}
+
+                                {/* Visual Brief Display - Shows after generation */}
+                                {visualBrief && (
+                                    <div style={{
+                                        marginTop: '16px',
+                                        padding: '16px',
+                                        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                                        borderRadius: '8px',
+                                        border: '2px solid #0ea5e9'
+                                    }}>
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            marginBottom: '8px'
+                                        }}>
+                                            <span style={{ fontSize: '20px', marginRight: '8px' }}>🎨</span>
+                                            <h4 style={{
+                                                margin: 0,
+                                                fontSize: '14px',
+                                                fontWeight: '600',
+                                                color: '#0369a1'
+                                            }}>
+                                                Visual Brief Generated
+                                            </h4>
+                                        </div>
+                                        <p style={{
+                                            margin: 0,
+                                            fontSize: '13px',
+                                            lineHeight: '1.6',
+                                            color: '#0c4a6e'
+                                        }}>
+                                            {visualBrief}
+                                        </p>
+                                        <small style={{
+                                            display: 'block',
+                                            marginTop: '8px',
+                                            fontSize: '12px',
+                                            color: '#0369a1',
+                                            fontStyle: 'italic'
+                                        }}>
+                                            ℹ️ This visual description was used to create your hero image (without text/CTAs)
+                                        </small>
                                     </div>
                                 )}
                             </div>

@@ -450,6 +450,55 @@ async function generateFromAdCreative(imageUrl, productUrl, productDescription =
 
     const productData = await scrapeProductPage(productUrl);
 
+    // STEP 1: Generate Visual Brief from the uploaded ad creative
+    console.log('📸 Step 1: Analyzing ad creative to generate visual brief...');
+    const visualBriefCompletion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+            {
+                role: "system",
+                content: "You are an expert visual analyst. Analyze the uploaded ad creative and describe its visual composition in detail. Focus ONLY on visual elements: composition, colors, lighting, mood, setting, people, objects, and overall aesthetic. Do NOT describe any text, headlines, buttons, or call-to-actions. Your description will be used to create a similar image without any text overlays."
+            },
+            {
+                role: "user",
+                content: [
+                    {
+                        type: "text",
+                        text: `Analyze this ad creative and provide a detailed visual brief describing:
+- Overall composition and framing
+- Color palette and lighting
+- Setting/environment (e.g., home, kitchen, outdoor)
+- People (if any): their expressions, actions, emotions
+- Key objects or focal points (excluding text/buttons)
+- Mood and atmosphere
+- Photography style (candid, professional, dramatic, etc.)
+
+Describe what you see visually so that someone could recreate a similar image WITHOUT any text, captions, or call-to-action buttons.
+
+Return ONLY a JSON object with this format:
+{
+  "visual_brief": "Detailed visual description here"
+}`
+                    },
+                    {
+                        type: "image_url",
+                        image_url: { url: imageUrl }
+                    }
+                ]
+            }
+        ],
+        temperature: 0.7,
+        max_tokens: 500,
+        response_format: { type: "json_object" }
+    });
+
+    const visualBriefData = JSON.parse(visualBriefCompletion.choices[0].message.content);
+    const visualBrief = visualBriefData.visual_brief || "Ad creative with dramatic composition";
+    console.log('✅ Visual Brief Generated:', visualBrief);
+
+    // STEP 2: Generate the advertorial content based on the ad creative
+    console.log('📝 Step 2: Generating advertorial content...');
+
     const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
@@ -643,24 +692,40 @@ Return ONLY a JSON array of 2 strings: ["prompt 1", "prompt 2"]`;
         }
     }
 
-    // Generate images in parallel with isImage1 flag
+    // Generate images with visual brief for Image 1
     if (articleData.image_prompts && articleData.image_prompts.length > 0) {
-        // Prepare reference images for Image 2 (Creative mode doesn't usually have productImages array passed, but if it does...)
-        // Actually generateFromAdCreative doesn't take productImages array in signature, only productMainImage.
-        // But let's check if we can support it if added later. For now just main image.
         const image2Refs = [];
         if (productMainImage) image2Refs.push(productMainImage);
 
-        const imagePromises = articleData.image_prompts.map((prompt, index) =>
+        // For Image 1 (Hero): Use the visual brief to create a similar image without text
+        const heroImagePrompt = `${visualBrief}. Create a similar image with the same composition, mood, lighting, and visual style. Indian household setting. CRITICAL: Do NOT include any text overlays, captions, headlines, buttons, or call-to-action elements. Focus purely on the visual scene, people, emotions, and environment. Photorealistic, candid photography, dramatic lighting.`;
+
+        console.log('🎨 Image 1 (Hero) - Using Visual Brief:', heroImagePrompt);
+        console.log('🎨 Image 2 (Solution) - Using AI Prompt:', articleData.image_prompts[1]);
+
+        // Generate both images
+        const imagePromises = [
+            // Image 1: Based on visual brief (no text/CTAs)
             generateImage(
-                prompt,
+                heroImagePrompt,
                 productDescription,
-                index === 0, // isImage1
-                index === 1 ? image2Refs : null // Pass reference images for Image 2
+                true, // isImage1
+                null
+            ),
+            // Image 2: Based on AI-generated solution prompt
+            generateImage(
+                articleData.image_prompts[1] || articleData.image_prompts[0],
+                productDescription,
+                false, // isImage1
+                image2Refs // Pass reference images for Image 2
             )
-        );
+        ];
+
         const images = await Promise.all(imagePromises);
         articleData.generated_images = images.filter(img => img !== null);
+
+        // Store the visual brief in the article data for reference
+        articleData.visual_brief = visualBrief;
     }
 
     return articleData;
