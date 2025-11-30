@@ -244,7 +244,8 @@ export default function NewArticle() {
                     productUrl,
                     productImages: productImages.length > 0 ? productImages : null,
                     productDescription, // Pass physical description
-                    productTitle: formData.title // Pass title as context
+                    productTitle: formData.title, // Pass title as context
+                    productMainImage: formData.product_main_image // Pass main image for solution image accuracy
                 })
             });
 
@@ -347,7 +348,10 @@ export default function NewArticle() {
             const res = await fetch('/api/articles', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    ...formData,
+                    product_images: productImages // Include uploaded/selected product images
+                })
             });
 
             const data = await res.json();

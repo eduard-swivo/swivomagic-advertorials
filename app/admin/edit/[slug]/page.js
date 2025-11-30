@@ -20,6 +20,7 @@ export default function EditArticle({ params }) {
         hero_image: '',
         second_image: '',
         product_main_image: '',
+        product_images: [], // Added
         advertorial_label: '',
         hook: '',
         story: [''],
@@ -52,6 +53,7 @@ export default function EditArticle({ params }) {
                     hero_image: article.hero_image || '',
                     second_image: article.second_image || '',
                     product_main_image: article.product_main_image || '',
+                    product_images: typeof article.product_images === 'string' ? JSON.parse(article.product_images) : (article.product_images || []), // Load product images
                     advertorial_label: article.advertorial_label || '',
                     hook: article.hook || '',
                     story: typeof article.story === 'string' ? JSON.parse(article.story) : (article.story || ['']),
@@ -199,6 +201,8 @@ export default function EditArticle({ params }) {
                     hook: formData.hook,
                     productUrl: formData.cta_link,
                     productTitle: formData.title,
+                    productMainImage: formData.product_main_image, // Pass main image for solution image accuracy
+                    productImages: formData.product_images, // Pass reference images
                     imageIndex: 1 // Only generate second image
                 })
             });

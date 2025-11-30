@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 import { put } from '@vercel/blob';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import sharp from 'sharp';
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -28,7 +29,7 @@ async function scrapeProductPage(url) {
 }
 
 // Helper: Generate Image
-async function generateImage(prompt) {
+async function generateImage(prompt, referenceImages = null) {
     try {
         const apiKey = process.env.GOOGLE_API_KEY;
         const genAI = new GoogleGenerativeAI(apiKey);
@@ -39,9 +40,43 @@ async function generateImage(prompt) {
 
         console.log('Generating image with Google Gemini:', enhancedPrompt);
 
+        // Prepare content parts
+        const parts = [{ text: enhancedPrompt }];
+
+        // Add reference images if available (for Image 2/Solution)
+        if (referenceImages) {
+            const imagesToProcess = Array.isArray(referenceImages) ? referenceImages : [referenceImages];
+
+            console.log(`📸 Processing ${imagesToProcess.length} reference images...`);
+
+            for (const imgUrl of imagesToProcess) {
+                if (!imgUrl) continue;
+
+                try {
+                    const refImageRes = await axios.get(imgUrl, {
+                        responseType: 'arraybuffer',
+                        timeout: 5000
+                    });
+
+                    const refBase64 = Buffer.from(refImageRes.data).toString('base64');
+                    const mimeType = refImageRes.headers['content-type'] || 'image/jpeg';
+
+                    parts.push({
+                        inlineData: {
+                            mimeType,
+                            data: refBase64
+                        }
+                    });
+                } catch (e) {
+                    console.warn(`⚠️ Failed to attach reference image (${imgUrl}):`, e.message);
+                }
+            }
+            console.log(`✅ Added ${parts.length - 1} reference images to Gemini request`);
+        }
+
         // Generate image
         const result = await model.generateContent({
-            contents: [{ role: 'user', parts: [{ text: enhancedPrompt }] }],
+            contents: [{ role: 'user', parts: parts }],
         });
 
         const response = result.response;
@@ -53,11 +88,16 @@ async function generateImage(prompt) {
         const imageBase64 = response.candidates[0].content.parts[0].inlineData.data;
         const buffer = Buffer.from(imageBase64, 'base64');
 
-        // Upload to Vercel Blob
-        const filename = `generated-image-${Date.now()}.jpg`;
-        const blob = await put(filename, buffer, {
+        // Convert to WebP using Sharp
+        const webpBuffer = await sharp(buffer)
+            .webp({ quality: 80 })
+            .toBuffer();
+
+        // Upload to Vercel Blob as WebP
+        const filename = `generated-image-${Date.now()}.webp`;
+        const blob = await put(filename, webpBuffer, {
             access: 'public',
-            contentType: 'image/jpeg'
+            contentType: 'image/webp'
         });
 
         return { url: blob.url, engine: 'google' };
@@ -79,11 +119,15 @@ async function generateImage(prompt) {
 
             // Download and upload to Blob
             const imageRes = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-            const buffer = Buffer.from(imageRes.data);
-            const filename = `dalle-fallback-${Date.now()}.png`;
-            const blob = await put(filename, buffer, {
+            // Convert to WebP using Sharp
+            const webpBuffer = await sharp(imageRes.data)
+                .webp({ quality: 80 })
+                .toBuffer();
+
+            const filename = `dalle-fallback-${Date.now()}.webp`;
+            const blob = await put(filename, webpBuffer, {
                 access: 'public',
-                contentType: 'image/png'
+                contentType: 'image/webp'
             });
 
             return { url: blob.url, engine: 'dalle' };
@@ -97,7 +141,7 @@ async function generateImage(prompt) {
 
 export async function POST(request) {
     try {
-        const { hook, productUrl, productImages, productTitle, productDescription } = await request.json();
+        const { hook, productUrl, productImages, productTitle, productDescription, productMainImage, imageIndex } = await request.json();
 
         if (!hook) {
             return NextResponse.json({ success: false, error: 'Hook is required' }, { status: 400 });
@@ -163,12 +207,24 @@ export async function POST(request) {
             }
         }
 
-        // Generate Images
-        const imagePromises = prompts.map(prompt => generateImage(prompt));
-        const images = await Promise.all(imagePromises);
-        const validImages = images.filter(img => img !== null);
+        // Prepare reference images for Image 2
+        const image2Refs = [];
+        if (productMainImage) image2Refs.push(productMainImage);
+        if (productImages && Array.isArray(productImages)) image2Refs.push(...productImages);
 
-        return NextResponse.json({ success: true, images: validImages });
+        // Generate Images
+        const imagePromises = prompts.map((prompt, index) => {
+            // If imageIndex is specified, skip other images
+            if (typeof imageIndex === 'number' && imageIndex !== index) {
+                return Promise.resolve(null);
+            }
+            return generateImage(prompt, index === 1 ? image2Refs : null);
+        });
+        const images = await Promise.all(imagePromises);
+        // Do NOT filter nulls here, so we preserve indices for the frontend
+        // The frontend expects images[1] to be the second image
+
+        return NextResponse.json({ success: true, images: images });
 
     } catch (error) {
         console.error('Regeneration Error:', error);

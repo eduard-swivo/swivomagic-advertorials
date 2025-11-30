@@ -4,6 +4,7 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { put } from '@vercel/blob';
+import sharp from 'sharp';
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
@@ -87,7 +88,7 @@ async function scrapeProductPage(url) {
 }
 
 // Generate image using Google Gemini 3 Pro Image (Nano Banana Pro)
-async function generateImage(prompt, productDescription = '', isImage1 = false) {
+async function generateImage(prompt, productDescription = '', isImage1 = false, referenceImages = null) {
     try {
         const apiKey = process.env.GOOGLE_API_KEY;
         if (!apiKey) throw new Error('Google API Key is missing');
@@ -109,11 +110,45 @@ async function generateImage(prompt, productDescription = '', isImage1 = false) 
             enhancedPrompt += `. IMPORTANT PRODUCT DETAILS: ${productDescription}. Ensure the product in the image matches this description EXACTLY.`;
         }
 
+        // Prepare content parts
+        const parts = [{ text: enhancedPrompt }];
+
+        // Add reference images if available (for Image 2/Solution)
+        if (referenceImages) {
+            const imagesToProcess = Array.isArray(referenceImages) ? referenceImages : [referenceImages];
+
+            console.log(`📸 Processing ${imagesToProcess.length} reference images...`);
+
+            for (const imgUrl of imagesToProcess) {
+                if (!imgUrl) continue;
+
+                try {
+                    const refImageRes = await axios.get(imgUrl, {
+                        responseType: 'arraybuffer',
+                        timeout: 5000
+                    });
+
+                    const refBase64 = Buffer.from(refImageRes.data).toString('base64');
+                    const mimeType = refImageRes.headers['content-type'] || 'image/jpeg';
+
+                    parts.push({
+                        inlineData: {
+                            mimeType,
+                            data: refBase64
+                        }
+                    });
+                } catch (e) {
+                    console.warn(`⚠️ Failed to attach reference image (${imgUrl}):`, e.message);
+                }
+            }
+            console.log(`✅ Added ${parts.length - 1} reference images to Gemini request`);
+        }
+
         // Generate image
         const result = await model.generateContent({
             contents: [{
                 role: 'user',
-                parts: [{ text: enhancedPrompt }]
+                parts: parts
             }],
             generationConfig: {
                 temperature: 0.4,
@@ -132,10 +167,16 @@ async function generateImage(prompt, productDescription = '', isImage1 = false) 
         const base64Image = imageData.inlineData.data;
         const buffer = Buffer.from(base64Image, 'base64');
 
-        // Upload to Vercel Blob
-        const filename = `ai-generated-${Date.now()}.jpg`;
-        const blob = await put(filename, buffer, {
+        // Convert to WebP using Sharp
+        const webpBuffer = await sharp(buffer)
+            .webp({ quality: 80 })
+            .toBuffer();
+
+        // Upload to Vercel Blob as WebP
+        const filename = `ai-generated-${Date.now()}.webp`;
+        const blob = await put(filename, webpBuffer, {
             access: 'public',
+            contentType: 'image/webp'
         });
 
         return { url: blob.url, engine: 'google' };
@@ -158,9 +199,16 @@ async function generateImage(prompt, productDescription = '', isImage1 = false) 
 
             // Fetch DALL-E image and upload to Blob
             const imageRes = await axios.get(dalleUrl, { responseType: 'arraybuffer' });
-            const filename = `dalle-fallback-${Date.now()}.png`;
-            const blob = await put(filename, imageRes.data, {
+
+            // Convert to WebP using Sharp
+            const webpBuffer = await sharp(imageRes.data)
+                .webp({ quality: 80 })
+                .toBuffer();
+
+            const filename = `dalle-fallback-${Date.now()}.webp`;
+            const blob = await put(filename, webpBuffer, {
                 access: 'public',
+                contentType: 'image/webp'
             });
 
             return { url: blob.url, engine: 'dalle' };
@@ -373,7 +421,19 @@ Return ONLY valid JSON in this exact format:
 
     // Generate images in parallel
     if (articleData.image_prompts && articleData.image_prompts.length > 0) {
-        const imagePromises = articleData.image_prompts.map(prompt => generateImage(prompt, productDescription));
+        // Prepare reference images for Image 2
+        const image2Refs = [];
+        if (productMainImage) image2Refs.push(productMainImage);
+        if (productImages && Array.isArray(productImages)) image2Refs.push(...productImages);
+
+        const imagePromises = articleData.image_prompts.map((prompt, index) =>
+            generateImage(
+                prompt,
+                productDescription,
+                index === 0, // isImage1
+                index === 1 ? image2Refs : null // Pass all reference images for Image 2
+            )
+        );
         const images = await Promise.all(imagePromises);
         articleData.generated_images = images.filter(img => img !== null);
     }
@@ -585,8 +645,19 @@ Return ONLY a JSON array of 2 strings: ["prompt 1", "prompt 2"]`;
 
     // Generate images in parallel with isImage1 flag
     if (articleData.image_prompts && articleData.image_prompts.length > 0) {
+        // Prepare reference images for Image 2 (Creative mode doesn't usually have productImages array passed, but if it does...)
+        // Actually generateFromAdCreative doesn't take productImages array in signature, only productMainImage.
+        // But let's check if we can support it if added later. For now just main image.
+        const image2Refs = [];
+        if (productMainImage) image2Refs.push(productMainImage);
+
         const imagePromises = articleData.image_prompts.map((prompt, index) =>
-            generateImage(prompt, productDescription, index === 0) // First image gets isImage1=true
+            generateImage(
+                prompt,
+                productDescription,
+                index === 0, // isImage1
+                index === 1 ? image2Refs : null // Pass reference images for Image 2
+            )
         );
         const images = await Promise.all(imagePromises);
         articleData.generated_images = images.filter(img => img !== null);
