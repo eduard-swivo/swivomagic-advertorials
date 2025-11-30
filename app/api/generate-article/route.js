@@ -616,8 +616,12 @@ Return ONLY valid JSON in this exact format:
 
     const articleData = JSON.parse(completion.choices[0].message.content);
 
+    // NOTE: Skipping the post-processing regeneration step because we're using the visual brief
+    // directly for Image 1. The visual brief approach is more accurate for matching the ad creative.
+
     // POST-PROCESSING: Use regenerate API's proven approach for Image 1
-    // Instead of trusting the AI's image prompts, regenerate them using the working method
+    // DISABLED: This was overriding the visual brief. We now use visual brief directly.
+    /*
     if (articleData.hook) {
         console.log('🔄 Regenerating image prompts using proven method...');
 
@@ -674,8 +678,11 @@ Return ONLY a JSON array of 2 strings: ["prompt 1", "prompt 2"]`;
             // Fall back to original prompts if regeneration fails
         }
     }
+    */
 
     // FINAL SAFETY CHECK: Scan Image 1 for product keywords and force override if found
+    // DISABLED: Not needed when using visual brief approach
+    /*
     if (articleData.image_prompts && articleData.image_prompts.length > 0) {
         const image1 = articleData.image_prompts[0].toLowerCase();
         const productKeywords = ['bottle', 'product', 'cleaning', 'spray', 'container', 'package', 'shelf', 'label', 'brand', 'solution', 'detergent', 'cleaner', 'supplies'];
@@ -691,6 +698,7 @@ Return ONLY a JSON array of 2 strings: ["prompt 1", "prompt 2"]`;
             console.log('✅ FORCED OVERRIDE: Replaced with problem-only prompt');
         }
     }
+    */
 
     // Generate images with visual brief for Image 1
     if (articleData.image_prompts && articleData.image_prompts.length > 0) {
