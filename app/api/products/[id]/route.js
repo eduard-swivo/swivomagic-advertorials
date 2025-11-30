@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { deleteProduct, updateProduct } from '@/lib/db';
 import { put } from '@vercel/blob';
 
+import sharp from 'sharp';
+
 export async function PUT(request, { params }) {
     try {
         const data = await request.json();
@@ -16,15 +18,19 @@ export async function PUT(request, { params }) {
             const uploadPromises = data.images.map(async (img) => {
                 if (img.startsWith('data:image')) {
                     // Convert base64 to buffer
-                    const mimeType = img.split(';')[0].split(':')[1];
-                    const ext = mimeType.split('/')[1];
                     const base64Data = img.split(',')[1];
                     const buffer = Buffer.from(base64Data, 'base64');
-                    const filename = `product-${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
 
-                    const blob = await put(filename, buffer, {
+                    // Convert to WebP
+                    const webpBuffer = await sharp(buffer)
+                        .webp({ quality: 80 })
+                        .toBuffer();
+
+                    const filename = `product-${Date.now()}-${Math.random().toString(36).substring(7)}.webp`;
+
+                    const blob = await put(filename, webpBuffer, {
                         access: 'public',
-                        contentType: mimeType
+                        contentType: 'image/webp'
                     });
                     return blob.url;
                 }
@@ -36,15 +42,19 @@ export async function PUT(request, { params }) {
         // Handle main_image upload
         let mainImageUrl = data.main_image;
         if (mainImageUrl && mainImageUrl.startsWith('data:image')) {
-            const mimeType = mainImageUrl.split(';')[0].split(':')[1];
-            const ext = mimeType.split('/')[1];
             const base64Data = mainImageUrl.split(',')[1];
             const buffer = Buffer.from(base64Data, 'base64');
-            const filename = `product-main-${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
 
-            const blob = await put(filename, buffer, {
+            // Convert to WebP
+            const webpBuffer = await sharp(buffer)
+                .webp({ quality: 80 })
+                .toBuffer();
+
+            const filename = `product-main-${Date.now()}-${Math.random().toString(36).substring(7)}.webp`;
+
+            const blob = await put(filename, webpBuffer, {
                 access: 'public',
-                contentType: mimeType
+                contentType: 'image/webp'
             });
             mainImageUrl = blob.url;
         }

@@ -381,7 +381,8 @@ Return ONLY valid JSON in this exact format:
     "text": "urgency text"
   },
   "comments": [
-    {"name": "User Name", "text": "Comment text here", "time": "2 days ago"}
+    {"name": "User 1", "text": "Comment text here", "time": "2 hours ago"},
+    {"name": "User 2", "text": "Another comment here", "time": "1 day ago"}
   ],
   "cta_text": "CTA BUTTON TEXT >>",
   "image_prompts": ["prompt 1", "prompt 2"]
@@ -569,12 +570,15 @@ ${productDescription ? `- Physical Description: "${productDescription}"` : ''}
 - The hook should feel like a natural continuation of what the ad promised
 - Match the emotional intensity and urgency of the ad
 
-**STORY:**
+**STORY (7-10 paragraphs):**
 - Start with the EXACT problem/pain point shown in the ad creative
 - Build on the fear, frustration, or desire the ad triggered
+- **EXPAND WITH INSIGHTS:** Add 2 full paragraphs dedicated to "insights and discoveries" - explain the hidden causes of the problem or the "aha!" moment of discovery.
+- **ADD REAL-LIFE EXAMPLES:** Add 2 full paragraphs giving concrete, relatable examples of the problem in daily life (e.g., "I remember when...", "It happens every time you...").
 - Introduce "${productData.title}" as the solution the ad was hinting at
 - Use the same tone (scientific, emotional, urgent, etc.) as the ad
 - If the ad mentions specific dangers, statistics, or claims, reference them in the story
+- Make the story feel substantial and well-researched, not thin or superficial.
 
 **IMAGE GENERATION:**
 - **IMAGE 1 (HERO)**: Based on the HOOK/TITLE you generated from the ad creative
@@ -603,13 +607,14 @@ ${productDescription ? `- Physical Description: "${productDescription}"` : ''}
 - Keep paragraphs short (2-4 sentences)
 - Use conversational language
 
-**COMMENTS:**
-- Create 5-10 Hinglish comments (random number, 10% Hindi, 90% English)
-- Timestamps must be random DAYS apart, spread across 1-14 days
-- Use varied formats: "2 days ago", "5 days ago", "1 week ago", "3 days ago", "10 days ago", "2 weeks ago"
-- Each comment should have a DIFFERENT timestamp
-- Make them sound authentic (questions, praise, testimonials)
-- Sort by recency (most recent first)
+**COMMENTS (CRITICAL: Generate 5-10 comments):**
+- You MUST generate between 5 and 10 separate comments (randomly select a number between 5 and 10).
+- Do NOT generate just one comment.
+- Language: "Hinglish" style (mix of Hindi and English, approx 10% Hindi).
+- Timestamps: MUST be random and varied. Do NOT use the same timestamp for all.
+- Spread timestamps across different times and days (e.g., "2 hours ago", "1 day ago", "3 days ago", "1 week ago").
+- Make them sound authentic (questions, praise, testimonials).
+- Sort by recency (most recent first).
 
 **AUTHOR:**
 - Realistic Indian woman's name with abbreviated surname (e.g., "Priya S.")
@@ -633,7 +638,8 @@ Return ONLY valid JSON in this exact format:
     "text": "urgency text"
   },
   "comments": [
-    {"name": "User Name", "text": "Comment text here", "time": "2 days ago"}
+    {"name": "User 1", "text": "Comment text here", "time": "2 hours ago"},
+    {"name": "User 2", "text": "Another comment here", "time": "1 day ago"}
   ],
   "cta_text": "CTA BUTTON TEXT >>",
   "image_prompts": ["prompt 1", "prompt 2"]
