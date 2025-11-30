@@ -62,37 +62,38 @@ export default function CountdownTimer({ initialMinutes = 20 }) {
                     justify-content: center;
                     background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
                     color: white;
-                    padding: 12px 24px;
-                    border-radius: 8px;
+                    padding: 8px 16px;
+                    border-radius: 6px;
                     font-weight: 700;
-                    font-size: 24px;
-                    letter-spacing: 1px;
-                    box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
-                    border: 3px solid #d32f2f;
+                    font-size: 18px;
+                    letter-spacing: 0.5px;
+                    box-shadow: 0 3px 10px rgba(255, 65, 108, 0.3);
+                    border: 2px solid #d32f2f;
                     animation: pulse 2s ease-in-out infinite;
-                    min-width: 120px;
+                    min-width: 90px;
                 }
 
                 .countdown-time {
                     font-family: 'Courier New', monospace;
-                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
                 }
 
                 @keyframes pulse {
                     0%, 100% {
                         transform: scale(1);
-                        box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
+                        box-shadow: 0 3px 10px rgba(255, 65, 108, 0.3);
                     }
                     50% {
-                        transform: scale(1.05);
-                        box-shadow: 0 6px 20px rgba(255, 65, 108, 0.5);
+                        transform: scale(1.03);
+                        box-shadow: 0 4px 15px rgba(255, 65, 108, 0.5);
                     }
                 }
 
                 @media (max-width: 768px) {
                     .countdown-timer {
-                        font-size: 20px;
-                        padding: 10px 20px;
+                        font-size: 16px;
+                        padding: 6px 12px;
+                        min-width: 80px;
                     }
                 }
             `}</style>

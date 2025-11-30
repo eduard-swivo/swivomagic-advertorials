@@ -94,6 +94,7 @@ export default async function ArticlePage({ params }) {
                     <div className="warning-box" style={{
                         backgroundColor: '#f8f9fa',
                         padding: '20px',
+                        paddingRight: countdownTimer?.enabled ? '120px' : '20px',
                         borderRadius: '10px',
                         marginTop: '30px',
                         position: 'relative'
