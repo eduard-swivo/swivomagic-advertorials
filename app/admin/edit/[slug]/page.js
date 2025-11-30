@@ -29,6 +29,7 @@ export default function EditArticle({ params }) {
         cta_link: '',
         cta_text: '',
         countdown_timer: { enabled: false, minutes: 20 },
+        visual_brief: '', // Added
         published: true
     });
 
@@ -62,6 +63,7 @@ export default function EditArticle({ params }) {
                     cta_link: article.cta_link || '',
                     cta_text: article.cta_text || '',
                     countdown_timer: typeof article.countdown_timer === 'string' ? JSON.parse(article.countdown_timer) : (article.countdown_timer || { enabled: false, minutes: 20 }),
+                    visual_brief: article.visual_brief || '',
                     published: article.published !== false
                 });
             }
@@ -163,6 +165,7 @@ export default function EditArticle({ params }) {
                     hook: formData.hook,
                     productUrl: formData.cta_link,
                     productTitle: formData.title,
+                    visualBrief: formData.visual_brief, // Pass visual brief
                     imageIndex: 0 // Only generate first image
                 })
             });
@@ -355,6 +358,61 @@ export default function EditArticle({ params }) {
                         </div>
                     )}
                 </div>
+
+                {/* Visual Brief Editor (New) */}
+                {formData.visual_brief && (
+                    <div className="form-group" style={{
+                        marginTop: '16px',
+                        padding: '16px',
+                        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                        borderRadius: '8px',
+                        border: '2px solid #0ea5e9'
+                    }}>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            marginBottom: '8px'
+                        }}>
+                            <span style={{ fontSize: '20px', marginRight: '8px' }}>🎨</span>
+                            <h4 style={{
+                                margin: 0,
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                color: '#0369a1'
+                            }}>
+                                Visual Brief (Editable)
+                            </h4>
+                        </div>
+                        <textarea
+                            name="visual_brief"
+                            value={formData.visual_brief}
+                            onChange={handleChange}
+                            rows={6}
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                border: '2px solid #bae6fd',
+                                borderRadius: '6px',
+                                fontSize: '13px',
+                                lineHeight: '1.6',
+                                color: '#0c4a6e',
+                                background: 'white',
+                                resize: 'vertical',
+                                fontFamily: 'inherit'
+                            }}
+                            placeholder="Visual brief will appear here..."
+                        />
+                        <small style={{
+                            display: 'block',
+                            marginTop: '8px',
+                            fontSize: '12px',
+                            color: '#0369a1',
+                            fontStyle: 'italic'
+                        }}>
+                            ℹ️ Edit this description to customize your hero image. This will be used when you click "Regenerate Hero Image".
+                        </small>
+                    </div>
+                )}
 
                 <div className="form-group">
                     <label>Second Image URL (Image 2)</label>

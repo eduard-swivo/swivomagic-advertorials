@@ -88,7 +88,7 @@ async function scrapeProductPage(url) {
 }
 
 // Generate image using Google Gemini 3 Pro Image (Nano Banana Pro)
-async function generateImage(prompt, productDescription = '', isImage1 = false, referenceImages = null) {
+async function generateImage(prompt, productDescription = '', isImage1 = false, referenceImages = null, fromAdCreative = false) {
     try {
         const apiKey = process.env.GOOGLE_API_KEY;
         if (!apiKey) throw new Error('Google API Key is missing');
@@ -99,6 +99,15 @@ async function generateImage(prompt, productDescription = '', isImage1 = false, 
 
         // Enhanced prompt for photorealism with Indian context + Product Description Enforcement
         let enhancedPrompt = prompt + " Indian household, Indian people, South Asian setting, raw photo, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, candid photography, no illustration, no 3d render, no cartoon, no cgi";
+
+        // Apply product restrictions ONLY for Product mode (not Ad Creative mode)
+        // In Ad Creative mode, we follow the visual brief exactly
+        if (!fromAdCreative && (isImage1 || prompt.toLowerCase().includes('no product'))) {
+            enhancedPrompt += ". CRITICAL EXCLUSIONS: absolutely no bottles, no spray bottles, no cleaning products, no containers, no packages, no labels, no branded items, no solutions, no detergents, no cleaners, no supplies, no items on shelves, no items on tables, no items on counters. Focus only on people and environment.";
+            console.log('🚫 Added product restrictions for Product mode Image 1');
+        } else if (fromAdCreative) {
+            console.log('✅ Ad Creative mode - following visual brief exactly, no restrictions');
+        }
 
         // Note: Removed aggressive negative prompts - now following visual brief exactly
         // The visual brief should already describe what to include/exclude
@@ -748,7 +757,8 @@ Return ONLY a JSON array of 2 strings: ["prompt 1", "prompt 2"]`;
                 heroImagePrompt,
                 productDescription,
                 true, // isImage1
-                null
+                null,
+                true // fromAdCreative - Allow products/bottles if described in visual brief
             ),
             // Image 2: Based on AI-generated solution prompt
             generateImage(

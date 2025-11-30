@@ -141,7 +141,7 @@ async function generateImage(prompt, referenceImages = null) {
 
 export async function POST(request) {
     try {
-        const { hook, productUrl, productImages, productTitle, productDescription, productMainImage, imageIndex } = await request.json();
+        const { hook, productUrl, productImages, productTitle, productDescription, productMainImage, imageIndex, visualBrief } = await request.json();
 
         if (!hook) {
             return NextResponse.json({ success: false, error: 'Hook is required' }, { status: 400 });
@@ -205,6 +205,12 @@ export async function POST(request) {
             } else {
                 throw new Error('Failed to parse prompts');
             }
+        }
+
+        // OVERRIDE Image 1 prompt if Visual Brief is provided
+        if (visualBrief && (imageIndex === 0 || imageIndex === undefined)) {
+            prompts[0] = `${visualBrief}. Create a similar image with the same composition, mood, lighting, and visual style. Indian household setting. CRITICAL: Do NOT include any text overlays, captions, headlines, buttons, or call-to-action elements. Focus purely on the visual scene, people, emotions, and environment. Photorealistic, candid photography, dramatic lighting.`;
+            console.log('🎨 Using Visual Brief for Image 1 regeneration');
         }
 
         // Prepare reference images for Image 2
