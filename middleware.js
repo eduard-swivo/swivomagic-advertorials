@@ -44,6 +44,12 @@ export function middleware(request) {
             return NextResponse.next();
         }
 
+        // Allow footer pages to pass through
+        const footerPaths = ['/privacy-policy', '/terms-of-service', '/about-us', '/contact-us'];
+        if (footerPaths.includes(pathname)) {
+            return NextResponse.next();
+        }
+
         // If path is NOT starting with /article, rewrite it to /article/[slug]
         // This allows 'latest.swivomagic.com/my-slug' to render 'app/article/[slug]'
         if (!pathname.startsWith('/article/')) {
