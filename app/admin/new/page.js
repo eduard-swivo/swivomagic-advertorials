@@ -26,6 +26,7 @@ export default function NewArticle() {
     const [generatedImages, setGeneratedImages] = useState([]); // Store DALL-E images
     const [selectedAngle, setSelectedAngle] = useState('before-after'); // Default angle
     const [visualBrief, setVisualBrief] = useState(''); // Store visual brief from ad creative analysis
+    const [generatingVisualBrief, setGeneratingVisualBrief] = useState(false); // Loading state for visual brief
 
     const angles = [
         { id: 'in-use', label: 'Product In Use', description: 'Focus on the mechanism and action' },
@@ -127,7 +128,41 @@ export default function NewArticle() {
         } else {
             setProductUrl('');
             setProductDescription('');
-            setProductImages([]);
+        }
+    };
+
+    const handleGenerateVisualBrief = async () => {
+        if (!imageFile) {
+            alert('Please upload an ad creative first');
+            return;
+        }
+
+        setGeneratingVisualBrief(true);
+        try {
+            // Convert file to base64
+            const reader = new FileReader();
+            const base64Image = await new Promise((resolve) => {
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(imageFile);
+            });
+
+            const res = await fetch('/api/generate-visual-brief', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imageUrl: base64Image })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                setVisualBrief(data.visual_brief);
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Visual brief generation error:', error);
+            alert('Failed to generate visual brief. Please try again.');
+        } finally {
+            setGeneratingVisualBrief(false);
         }
     };
 
@@ -165,6 +200,7 @@ export default function NewArticle() {
                 payload.imageUrl = base64Image;
                 payload.productDescription = productDescription;
                 payload.productMainImage = formData.product_main_image;
+                payload.visualBrief = visualBrief; // Pass the visual brief if available
             }
 
             setProgressMessage('Analyzing product & writing copy...');
@@ -704,10 +740,32 @@ export default function NewArticle() {
                                                 border: '2px solid #e5e7eb'
                                             }}
                                         />
+
+                                        {/* Generate Visual Brief Button */}
+                                        <button
+                                            type="button"
+                                            onClick={handleGenerateVisualBrief}
+                                            disabled={generatingVisualBrief}
+                                            style={{
+                                                marginTop: '12px',
+                                                width: '100%',
+                                                padding: '12px',
+                                                background: generatingVisualBrief ? '#9ca3af' : 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                fontSize: '14px',
+                                                fontWeight: '600',
+                                                cursor: generatingVisualBrief ? 'not-allowed' : 'pointer',
+                                                boxShadow: '0 2px 8px rgba(14, 165, 233, 0.3)'
+                                            }}
+                                        >
+                                            {generatingVisualBrief ? '🔄 Analyzing Creative...' : '🎨 Generate Visual Brief from Creative'}
+                                        </button>
                                     </div>
                                 )}
 
-                                {/* Visual Brief Display - Shows after generation */}
+                                {/* Visual Brief Editor - Shows after generation */}
                                 {visualBrief && (
                                     <div style={{
                                         marginTop: '16px',
@@ -728,17 +786,27 @@ export default function NewArticle() {
                                                 fontWeight: '600',
                                                 color: '#0369a1'
                                             }}>
-                                                Visual Brief Generated
+                                                Visual Brief (Editable)
                                             </h4>
                                         </div>
-                                        <p style={{
-                                            margin: 0,
-                                            fontSize: '13px',
-                                            lineHeight: '1.6',
-                                            color: '#0c4a6e'
-                                        }}>
-                                            {visualBrief}
-                                        </p>
+                                        <textarea
+                                            value={visualBrief}
+                                            onChange={(e) => setVisualBrief(e.target.value)}
+                                            rows={6}
+                                            style={{
+                                                width: '100%',
+                                                padding: '12px',
+                                                border: '2px solid #bae6fd',
+                                                borderRadius: '6px',
+                                                fontSize: '13px',
+                                                lineHeight: '1.6',
+                                                color: '#0c4a6e',
+                                                background: 'white',
+                                                resize: 'vertical',
+                                                fontFamily: 'inherit'
+                                            }}
+                                            placeholder="Visual brief will appear here..."
+                                        />
                                         <small style={{
                                             display: 'block',
                                             marginTop: '8px',
@@ -746,7 +814,7 @@ export default function NewArticle() {
                                             color: '#0369a1',
                                             fontStyle: 'italic'
                                         }}>
-                                            ℹ️ This visual description was used to create your hero image (without text/CTAs)
+                                            ℹ️ Edit this description to customize your hero image. This will be used to create an image similar to your ad creative (without text/CTAs).
                                         </small>
                                     </div>
                                 )}

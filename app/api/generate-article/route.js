@@ -442,29 +442,31 @@ Return ONLY valid JSON in this exact format:
 }
 
 // Generate article from ad creative
-async function generateFromAdCreative(imageUrl, productUrl, productDescription = null, productMainImage = null) {
+async function generateFromAdCreative(imageUrl, productUrl, productDescription = null, productMainImage = null, visualBrief = null) {
     console.log('🎬 generateFromAdCreative called');
     console.log('Product URL:', productUrl);
     console.log('Has productDescription:', !!productDescription);
     console.log('Has productMainImage:', !!productMainImage);
+    console.log('Has visualBrief:', !!visualBrief);
 
     const productData = await scrapeProductPage(productUrl);
 
-    // STEP 1: Generate Visual Brief from the uploaded ad creative
-    console.log('📸 Step 1: Analyzing ad creative to generate visual brief...');
-    const visualBriefCompletion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-            {
-                role: "system",
-                content: "You are an expert visual analyst. Analyze the uploaded ad creative and describe its visual composition in detail. Focus ONLY on visual elements: composition, colors, lighting, mood, setting, people, objects, and overall aesthetic. Do NOT describe any text, headlines, buttons, or call-to-actions. Your description will be used to create a similar image without any text overlays."
-            },
-            {
-                role: "user",
-                content: [
-                    {
-                        type: "text",
-                        text: `Analyze this ad creative and provide a detailed visual brief describing:
+    // If no visual brief provided, generate one
+    if (!visualBrief) {
+        console.log('📸 No visual brief provided, generating one...');
+        const visualBriefCompletion = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are an expert visual analyst. Analyze the uploaded ad creative and describe its visual composition in detail. Focus ONLY on visual elements: composition, colors, lighting, mood, setting, people, objects, and overall aesthetic. Do NOT describe any text, headlines, buttons, or call-to-actions. Your description will be used to create a similar image without any text overlays."
+                },
+                {
+                    role: "user",
+                    content: [
+                        {
+                            type: "text",
+                            text: `Analyze this ad creative and provide a detailed visual brief describing:
 - Overall composition and framing
 - Color palette and lighting
 - Setting/environment (e.g., home, kitchen, outdoor)
@@ -479,25 +481,28 @@ Return ONLY a JSON object with this format:
 {
   "visual_brief": "Detailed visual description here"
 }`
-                    },
-                    {
-                        type: "image_url",
-                        image_url: { url: imageUrl }
-                    }
-                ]
-            }
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
-        response_format: { type: "json_object" }
-    });
+                        },
+                        {
+                            type: "image_url",
+                            image_url: { url: imageUrl }
+                        }
+                    ]
+                }
+            ],
+            temperature: 0.7,
+            max_tokens: 500,
+            response_format: { type: "json_object" }
+        });
 
-    const visualBriefData = JSON.parse(visualBriefCompletion.choices[0].message.content);
-    const visualBrief = visualBriefData.visual_brief || "Ad creative with dramatic composition";
-    console.log('✅ Visual Brief Generated:', visualBrief);
+        const visualBriefData = JSON.parse(visualBriefCompletion.choices[0].message.content);
+        visualBrief = visualBriefData.visual_brief || "Ad creative with dramatic composition";
+        console.log('✅ Visual Brief Generated:', visualBrief);
+    } else {
+        console.log('✅ Using provided visual brief:', visualBrief);
+    }
 
     // STEP 2: Generate the advertorial content based on the ad creative
-    console.log('📝 Step 2: Generating advertorial content...');
+    console.log('📝 Generating advertorial content...');
 
     const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -742,7 +747,7 @@ Return ONLY a JSON array of 2 strings: ["prompt 1", "prompt 2"]`;
 // API Route Handler
 export async function POST(request) {
     try {
-        const { mode, productUrl, productImages, productDescription, productMainImage, imageUrl, angle } = await request.json();
+        const { mode, productUrl, productImages, productDescription, productMainImage, imageUrl, angle, visualBrief } = await request.json();
 
         console.log('Generating article in mode:', mode, 'with angle:', angle);
 
@@ -764,7 +769,7 @@ export async function POST(request) {
                     { status: 400 }
                 );
             }
-            articleData = await generateFromAdCreative(imageUrl, productUrl, productDescription, productMainImage);
+            articleData = await generateFromAdCreative(imageUrl, productUrl, productDescription, productMainImage, visualBrief);
         } else {
             return NextResponse.json(
                 { success: false, error: 'Invalid mode' },
