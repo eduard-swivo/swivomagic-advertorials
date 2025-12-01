@@ -25,6 +25,8 @@ export default function NewArticle() {
     const [imagePreview, setImagePreview] = useState('');
     const [generatedImages, setGeneratedImages] = useState([]); // Store DALL-E images
     const [selectedAngle, setSelectedAngle] = useState('before-after'); // Default angle
+    const [adCreativeMode, setAdCreativeMode] = useState('upload'); // 'upload' or 'url'
+    const [adCreativeUrl, setAdCreativeUrl] = useState('');
     const [visualBrief, setVisualBrief] = useState(''); // Store visual brief from ad creative analysis
     const [generatingVisualBrief, setGeneratingVisualBrief] = useState(false); // Loading state for visual brief
 
@@ -70,6 +72,13 @@ export default function NewArticle() {
             };
             reader.readAsDataURL(file);
         }
+    };
+
+    const handleAdCreativeUrlChange = (e) => {
+        const url = e.target.value;
+        setAdCreativeUrl(url);
+        setImagePreview(url); // Preview the URL directly
+        setImageFile(null); // Clear file if URL is used
     };
 
     useEffect(() => {
@@ -132,24 +141,34 @@ export default function NewArticle() {
     };
 
     const handleGenerateVisualBrief = async () => {
-        if (!imageFile) {
+        if (adCreativeMode === 'upload' && !imageFile) {
             alert('Please upload an ad creative first');
+            return;
+        }
+        if (adCreativeMode === 'url' && !adCreativeUrl) {
+            alert('Please enter an image URL first');
             return;
         }
 
         setGeneratingVisualBrief(true);
         try {
-            // Convert file to base64
-            const reader = new FileReader();
-            const base64Image = await new Promise((resolve) => {
-                reader.onload = (e) => resolve(e.target.result);
-                reader.readAsDataURL(imageFile);
-            });
+            let imageUrlToSend = '';
+
+            if (adCreativeMode === 'upload') {
+                // Convert file to base64
+                const reader = new FileReader();
+                imageUrlToSend = await new Promise((resolve) => {
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(imageFile);
+                });
+            } else {
+                imageUrlToSend = adCreativeUrl;
+            }
 
             const res = await fetch('/api/generate-visual-brief', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imageUrl: base64Image })
+                body: JSON.stringify({ imageUrl: imageUrlToSend })
             });
 
             const data = await res.json();
@@ -171,9 +190,15 @@ export default function NewArticle() {
             alert('Please select a product first');
             return;
         }
-        if (aiMode === 'creative' && !imageFile) {
-            alert('Please upload an ad creative first');
-            return;
+        if (aiMode === 'creative') {
+            if (adCreativeMode === 'upload' && !imageFile) {
+                alert('Please upload an ad creative first');
+                return;
+            }
+            if (adCreativeMode === 'url' && !adCreativeUrl) {
+                alert('Please enter an image URL first');
+                return;
+            }
         }
 
         setGenerating(true);
@@ -191,13 +216,19 @@ export default function NewArticle() {
                 payload.productDescription = productDescription;
                 payload.productMainImage = formData.product_main_image; // Add main image for Image 2 generation
             } else {
-                // Convert file to base64 for creative mode
-                const reader = new FileReader();
-                const base64Image = await new Promise((resolve) => {
-                    reader.onload = (e) => resolve(e.target.result);
-                    reader.readAsDataURL(imageFile);
-                });
-                payload.imageUrl = base64Image;
+                let imageUrlToSend = '';
+                if (adCreativeMode === 'upload') {
+                    // Convert file to base64 for creative mode
+                    const reader = new FileReader();
+                    imageUrlToSend = await new Promise((resolve) => {
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(imageFile);
+                    });
+                } else {
+                    imageUrlToSend = adCreativeUrl;
+                }
+
+                payload.imageUrl = imageUrlToSend;
                 payload.productDescription = productDescription;
                 payload.productMainImage = formData.product_main_image;
                 payload.visualBrief = visualBrief; // Pass the visual brief if available
@@ -717,19 +748,71 @@ export default function NewArticle() {
                         {aiMode === 'creative' && (
                             <div style={{ marginBottom: '16px' }}>
                                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
-                                    Upload Ad Creative *
+                                    Ad Creative Source *
                                 </label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    style={{
-                                        width: '100%',
-                                        padding: '12px',
-                                        border: '2px solid #e5e7eb',
-                                        borderRadius: '8px'
-                                    }}
-                                />
+
+                                {/* Toggle for Upload vs URL */}
+                                <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                                    <button
+                                        onClick={() => setAdCreativeMode('upload')}
+                                        style={{
+                                            flex: 1,
+                                            padding: '8px',
+                                            background: adCreativeMode === 'upload' ? '#e0f2fe' : '#f9fafb',
+                                            color: adCreativeMode === 'upload' ? '#0284c7' : '#6b7280',
+                                            border: `1px solid ${adCreativeMode === 'upload' ? '#0ea5e9' : '#e5e7eb'}`,
+                                            borderRadius: '6px',
+                                            fontSize: '13px',
+                                            fontWeight: '600',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        📁 Upload File
+                                    </button>
+                                    <button
+                                        onClick={() => setAdCreativeMode('url')}
+                                        style={{
+                                            flex: 1,
+                                            padding: '8px',
+                                            background: adCreativeMode === 'url' ? '#e0f2fe' : '#f9fafb',
+                                            color: adCreativeMode === 'url' ? '#0284c7' : '#6b7280',
+                                            border: `1px solid ${adCreativeMode === 'url' ? '#0ea5e9' : '#e5e7eb'}`,
+                                            borderRadius: '6px',
+                                            fontSize: '13px',
+                                            fontWeight: '600',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        🔗 Paste URL
+                                    </button>
+                                </div>
+
+                                {adCreativeMode === 'upload' ? (
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px',
+                                            border: '2px solid #e5e7eb',
+                                            borderRadius: '8px'
+                                        }}
+                                    />
+                                ) : (
+                                    <input
+                                        type="url"
+                                        value={adCreativeUrl}
+                                        onChange={handleAdCreativeUrlChange}
+                                        placeholder="https://example.com/image.jpg"
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px',
+                                            border: '2px solid #e5e7eb',
+                                            borderRadius: '8px'
+                                        }}
+                                    />
+                                )}
                                 {imagePreview && (
                                     <div style={{ marginTop: '12px' }}>
                                         <img
