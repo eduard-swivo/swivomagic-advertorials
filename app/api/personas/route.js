@@ -4,10 +4,10 @@ import { getPersonas, createPersona, deletePersona } from '@/lib/db';
 export async function GET() {
     try {
         const personas = await getPersonas();
-        return NextResponse.json(personas);
+        return NextResponse.json({ success: true, personas });
     } catch (error) {
         console.error('Error in GET /api/personas:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }
 
@@ -17,16 +17,16 @@ export async function POST(request) {
 
         if (!name || !description) {
             return NextResponse.json(
-                { error: 'Name and description are required' },
+                { success: false, error: 'Name and description are required' },
                 { status: 400 }
             );
         }
 
         const persona = await createPersona(name, description);
-        return NextResponse.json(persona);
+        return NextResponse.json({ success: true, persona });
     } catch (error) {
         console.error('Error in POST /api/personas:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }
 
