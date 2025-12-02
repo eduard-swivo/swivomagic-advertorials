@@ -25,10 +25,16 @@ export default function NewArticle() {
     const [imagePreview, setImagePreview] = useState('');
     const [generatedImages, setGeneratedImages] = useState([]); // Store DALL-E images
     const [selectedAngle, setSelectedAngle] = useState('before-after'); // Default angle
-    const [adCreativeMode, setAdCreativeMode] = useState('upload'); // 'upload' or 'url'
-    const [adCreativeUrl, setAdCreativeUrl] = useState('');
-    const [visualBrief, setVisualBrief] = useState(''); // Store visual brief from ad creative analysis
-    const [generatingVisualBrief, setGeneratingVisualBrief] = useState(false); // Loading state for visual brief
+    const [visualBrief, setVisualBrief] = useState('');
+    const [analyzingCreative, setAnalyzingCreative] = useState(false);
+    const [creativeInputType, setCreativeInputType] = useState('file'); // 'file' or 'url'
+    const [creativeUrl, setCreativeUrl] = useState('');
+
+    // Persona/Angle State
+    const [persona, setPersona] = useState('');
+    const [savedPersonas, setSavedPersonas] = useState([]);
+    const [personaName, setPersonaName] = useState('');
+    const [showSavePersona, setShowSavePersona] = useState(false);
 
     const angles = [
         { id: 'in-use', label: 'Product In Use', description: 'Focus on the mechanism and action' },
@@ -49,7 +55,8 @@ export default function NewArticle() {
         excerpt: '',
         hero_image: '',
         second_image: '',
-        product_main_image: '', // New field
+        product_main_image: '',
+        visual_brief: '',
         advertorial_label: '',
         hook: '',
         story: [''],
@@ -58,7 +65,7 @@ export default function NewArticle() {
         comments: [],
         cta_link: '',
         cta_text: 'CHECK AVAILABILITY >>',
-        countdown_timer: { enabled: false, minutes: 20 },
+        show_timer: true,
         published: true
     });
 
@@ -74,13 +81,6 @@ export default function NewArticle() {
         }
     };
 
-    const handleAdCreativeUrlChange = (e) => {
-        const url = e.target.value;
-        setAdCreativeUrl(url);
-        setImagePreview(url); // Preview the URL directly
-        setImageFile(null); // Clear file if URL is used
-    };
-
     useEffect(() => {
         // Fetch saved products
         fetch('/api/products')
@@ -91,6 +91,16 @@ export default function NewArticle() {
                 }
             })
             .catch(err => console.error('Error fetching products:', err));
+
+        // Fetch saved personas
+        fetch('/api/personas')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    setSavedPersonas(data.personas);
+                }
+            })
+            .catch(err => console.error('Error fetching personas:', err));
     }, []);
 
     const handleProductImagesUpload = (e) => {
@@ -117,7 +127,106 @@ export default function NewArticle() {
         setProductImages(prev => prev.filter((_, i) => i !== index));
     };
 
-    const handleProductSelect = (e) => {
+    const handleAnalyzeCreative = async () => {
+        let imageUrlToSend = '';
+
+        if (creativeInputType === 'file') {
+            if (!imageFile) {
+                alert('Please upload an ad creative first');
+                return;
+            }
+            const reader = new FileReader();
+            imageUrlToSend = await new Promise((resolve) => {
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(imageFile);
+            });
+        } else {
+            if (!creativeUrl) {
+                alert('Please enter an image URL');
+                return;
+            }
+            imageUrlToSend = creativeUrl;
+        }
+
+        setAnalyzingCreative(true);
+        try {
+            const res = await fetch('/api/analyze-creative', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imageUrl: imageUrlToSend })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                setVisualBrief(data.visualBrief);
+            } else {
+                alert('Error analyzing image: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to analyze image');
+        } finally {
+            setAnalyzingCreative(false);
+        }
+    };
+
+    const handleSavePersona = async () => {
+        if (!personaName || !persona) {
+            alert('Please enter a name and description for the persona');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/personas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: personaName, description: persona })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setSavedPersonas(prev => [data.persona, ...prev]);
+                setPersonaName('');
+                setShowSavePersona(false);
+                alert('Persona saved successfully!');
+            } else {
+                alert('Error saving persona: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error saving persona:', error);
+            alert('Failed to save persona');
+        }
+    };
+
+    const handleDeletePersona = async (id) => {
+        if (!confirm('Are you sure you want to delete this persona?')) return;
+
+        try {
+            const res = await fetch(`/api/personas?id=${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) {
+                setSavedPersonas(prev => prev.filter(p => p.id !== id));
+            } else {
+                alert('Error deleting persona: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error deleting persona:', error);
+            alert('Failed to delete persona');
+        }
+    };
+
+    const handlePersonaSelect = (e) => {
+        const id = e.target.value;
+        if (id) {
+            const selected = savedPersonas.find(p => p.id.toString() === id);
+            if (selected) {
+                setPersona(selected.description);
+            }
+        } else {
+            setPersona('');
+        }
+    };
+
+    const handleProductSelect = async (e) => {
         const id = e.target.value;
         setSelectedProductId(id);
 
@@ -129,59 +238,28 @@ export default function NewArticle() {
                 if (product.images && product.images.length > 0) {
                     setProductImages(product.images);
                 }
-                // Auto-set main image if available
+                // Auto-set main image if available and validate it
                 if (product.main_image) {
-                    setFormData(prev => ({ ...prev, product_main_image: product.main_image }));
+                    try {
+                        // Test if the image URL is accessible
+                        const response = await fetch(product.main_image, { method: 'HEAD' });
+                        if (response.ok) {
+                            setFormData(prev => ({ ...prev, product_main_image: product.main_image }));
+                        } else {
+                            console.warn('Product main image URL is not accessible:', product.main_image);
+                            setFormData(prev => ({ ...prev, product_main_image: '' }));
+                        }
+                    } catch (error) {
+                        console.warn('Error validating product main image:', error);
+                        setFormData(prev => ({ ...prev, product_main_image: '' }));
+                    }
                 }
             }
         } else {
             setProductUrl('');
             setProductDescription('');
-        }
-    };
-
-    const handleGenerateVisualBrief = async () => {
-        if (adCreativeMode === 'upload' && !imageFile) {
-            alert('Please upload an ad creative first');
-            return;
-        }
-        if (adCreativeMode === 'url' && !adCreativeUrl) {
-            alert('Please enter an image URL first');
-            return;
-        }
-
-        setGeneratingVisualBrief(true);
-        try {
-            let imageUrlToSend = '';
-
-            if (adCreativeMode === 'upload') {
-                // Convert file to base64
-                const reader = new FileReader();
-                imageUrlToSend = await new Promise((resolve) => {
-                    reader.onload = (e) => resolve(e.target.result);
-                    reader.readAsDataURL(imageFile);
-                });
-            } else {
-                imageUrlToSend = adCreativeUrl;
-            }
-
-            const res = await fetch('/api/generate-visual-brief', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imageUrl: imageUrlToSend })
-            });
-
-            const data = await res.json();
-            if (data.success) {
-                setVisualBrief(data.visual_brief);
-            } else {
-                alert('Error: ' + data.error);
-            }
-        } catch (error) {
-            console.error('Visual brief generation error:', error);
-            alert('Failed to generate visual brief. Please try again.');
-        } finally {
-            setGeneratingVisualBrief(false);
+            setProductImages([]);
+            setFormData(prev => ({ ...prev, product_main_image: '' }));
         }
     };
 
@@ -191,12 +269,12 @@ export default function NewArticle() {
             return;
         }
         if (aiMode === 'creative') {
-            if (adCreativeMode === 'upload' && !imageFile) {
+            if (creativeInputType === 'file' && !imageFile) {
                 alert('Please upload an ad creative first');
                 return;
             }
-            if (adCreativeMode === 'url' && !adCreativeUrl) {
-                alert('Please enter an image URL first');
+            if (creativeInputType === 'url' && !creativeUrl) {
+                alert('Please enter an image URL');
                 return;
             }
         }
@@ -216,22 +294,22 @@ export default function NewArticle() {
                 payload.productDescription = productDescription;
                 payload.productMainImage = formData.product_main_image; // Add main image for Image 2 generation
             } else {
-                let imageUrlToSend = '';
-                if (adCreativeMode === 'upload') {
+                if (creativeInputType === 'file') {
                     // Convert file to base64 for creative mode
                     const reader = new FileReader();
-                    imageUrlToSend = await new Promise((resolve) => {
+                    const base64Image = await new Promise((resolve) => {
                         reader.onload = (e) => resolve(e.target.result);
                         reader.readAsDataURL(imageFile);
                     });
+                    payload.imageUrl = base64Image;
                 } else {
-                    imageUrlToSend = adCreativeUrl;
+                    payload.imageUrl = creativeUrl;
                 }
-
-                payload.imageUrl = imageUrlToSend;
+                payload.productDescription = productDescription;
                 payload.productDescription = productDescription;
                 payload.productMainImage = formData.product_main_image;
-                payload.visualBrief = visualBrief; // Pass the visual brief if available
+                payload.visualBrief = visualBrief;
+                payload.persona = persona; // Pass the persona/angle
             }
 
             setProgressMessage('Analyzing product & writing copy...');
@@ -270,17 +348,13 @@ export default function NewArticle() {
                         cta_link: productUrl || '', // Use product URL as CTA link
                         cta_text: data.article.cta_text || 'CHECK AVAILABILITY >>',
                         hero_image: generatedImgs[0]?.url || generatedImgs[0] || '',
-                        second_image: generatedImgs[1]?.url || generatedImgs[1] || ''
+                        second_image: generatedImgs[1]?.url || generatedImgs[1] || '',
+                        visual_brief: visualBrief || '' // Save the visual brief
                     }));
 
                     // Show generated images if available
                     if (generatedImgs.length > 0) {
                         setGeneratedImages(generatedImgs);
-                    }
-
-                    // Store visual brief if available (from ad creative mode)
-                    if (data.article.visual_brief) {
-                        setVisualBrief(data.article.visual_brief);
                     }
 
                     setMode('manual'); // Switch to manual mode to review/edit
@@ -317,8 +391,7 @@ export default function NewArticle() {
                     productUrl,
                     productImages: productImages.length > 0 ? productImages : null,
                     productDescription, // Pass physical description
-                    productTitle: formData.title, // Pass title as context
-                    productMainImage: formData.product_main_image // Pass main image for solution image accuracy
+                    productTitle: formData.title // Pass title as context
                 })
             });
 
@@ -421,11 +494,7 @@ export default function NewArticle() {
             const res = await fetch('/api/articles', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...formData,
-                    product_images: productImages, // Include uploaded/selected product images
-                    visual_brief: visualBrief // Include visual brief
-                })
+                body: JSON.stringify(formData)
             });
 
             const data = await res.json();
@@ -751,157 +820,255 @@ export default function NewArticle() {
                                     Ad Creative Source *
                                 </label>
 
-                                {/* Toggle for Upload vs URL */}
                                 <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
                                     <button
-                                        onClick={() => setAdCreativeMode('upload')}
+                                        onClick={() => {
+                                            setCreativeInputType('file');
+                                            setImagePreview('');
+                                            setCreativeUrl('');
+                                        }}
                                         style={{
-                                            flex: 1,
-                                            padding: '8px',
-                                            background: adCreativeMode === 'upload' ? '#e0f2fe' : '#f9fafb',
-                                            color: adCreativeMode === 'upload' ? '#0284c7' : '#6b7280',
-                                            border: `1px solid ${adCreativeMode === 'upload' ? '#0ea5e9' : '#e5e7eb'}`,
+                                            padding: '8px 16px',
+                                            background: creativeInputType === 'file' ? '#4f46e5' : '#f3f4f6',
+                                            color: creativeInputType === 'file' ? 'white' : '#374151',
+                                            border: 'none',
                                             borderRadius: '6px',
+                                            cursor: 'pointer',
                                             fontSize: '13px',
-                                            fontWeight: '600',
-                                            cursor: 'pointer'
+                                            fontWeight: '500'
                                         }}
                                     >
-                                        📁 Upload File
+                                        Upload File
                                     </button>
                                     <button
-                                        onClick={() => setAdCreativeMode('url')}
+                                        onClick={() => {
+                                            setCreativeInputType('url');
+                                            setImagePreview('');
+                                            setImageFile(null);
+                                        }}
                                         style={{
-                                            flex: 1,
-                                            padding: '8px',
-                                            background: adCreativeMode === 'url' ? '#e0f2fe' : '#f9fafb',
-                                            color: adCreativeMode === 'url' ? '#0284c7' : '#6b7280',
-                                            border: `1px solid ${adCreativeMode === 'url' ? '#0ea5e9' : '#e5e7eb'}`,
+                                            padding: '8px 16px',
+                                            background: creativeInputType === 'url' ? '#4f46e5' : '#f3f4f6',
+                                            color: creativeInputType === 'url' ? 'white' : '#374151',
+                                            border: 'none',
                                             borderRadius: '6px',
+                                            cursor: 'pointer',
                                             fontSize: '13px',
-                                            fontWeight: '600',
-                                            cursor: 'pointer'
+                                            fontWeight: '500'
                                         }}
                                     >
-                                        🔗 Paste URL
+                                        Image URL
                                     </button>
                                 </div>
 
-                                {adCreativeMode === 'upload' ? (
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                        style={{
-                                            width: '100%',
-                                            padding: '12px',
-                                            border: '2px solid #e5e7eb',
-                                            borderRadius: '8px'
-                                        }}
-                                    />
-                                ) : (
-                                    <input
-                                        type="url"
-                                        value={adCreativeUrl}
-                                        onChange={handleAdCreativeUrlChange}
-                                        placeholder="https://example.com/image.jpg"
-                                        style={{
-                                            width: '100%',
-                                            padding: '12px',
-                                            border: '2px solid #e5e7eb',
-                                            borderRadius: '8px'
-                                        }}
-                                    />
-                                )}
-                                {imagePreview && (
-                                    <div style={{ marginTop: '12px' }}>
-                                        <img
-                                            src={imagePreview}
-                                            alt="Preview"
-                                            style={{
-                                                maxWidth: '300px',
-                                                borderRadius: '8px',
-                                                border: '2px solid #e5e7eb'
-                                            }}
-                                        />
+                                <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                                    <div style={{ flex: 1 }}>
+                                        {creativeInputType === 'file' ? (
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '12px',
+                                                    border: '2px solid #e5e7eb',
+                                                    borderRadius: '8px'
+                                                }}
+                                            />
+                                        ) : (
+                                            <input
+                                                type="url"
+                                                value={creativeUrl}
+                                                onChange={(e) => {
+                                                    setCreativeUrl(e.target.value);
+                                                    setImagePreview(e.target.value);
+                                                }}
+                                                placeholder="https://example.com/image.jpg"
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '12px',
+                                                    border: '2px solid #e5e7eb',
+                                                    borderRadius: '8px'
+                                                }}
+                                            />
+                                        )}
+                                        {imagePreview && (
+                                            <div style={{ marginTop: '12px' }}>
+                                                <img
+                                                    src={imagePreview}
+                                                    alt="Preview"
+                                                    style={{
+                                                        maxWidth: '100%',
+                                                        maxHeight: '300px',
+                                                        borderRadius: '8px',
+                                                        border: '2px solid #e5e7eb'
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
 
-                                        {/* Generate Visual Brief Button */}
-                                        <button
-                                            type="button"
-                                            onClick={handleGenerateVisualBrief}
-                                            disabled={generatingVisualBrief}
+                                    {imagePreview && (
+                                        <div style={{ flex: 1 }}>
+                                            <button
+                                                type="button"
+                                                onClick={handleAnalyzeCreative}
+                                                disabled={analyzingCreative}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '10px',
+                                                    background: analyzingCreative ? '#9ca3af' : '#4f46e5',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '8px',
+                                                    fontWeight: '600',
+                                                    cursor: analyzingCreative ? 'not-allowed' : 'pointer',
+                                                    marginBottom: '12px',
+                                                    fontSize: '14px'
+                                                }}
+                                            >
+                                                {analyzingCreative ? '🔍 Analyzing...' : '✨ Generate Visual Brief for Hero Image'}
+                                            </button>
+
+                                            {visualBrief && (
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
+                                                        Visual Brief (Editable):
+                                                    </label>
+                                                    <textarea
+                                                        value={visualBrief}
+                                                        onChange={(e) => setVisualBrief(e.target.value)}
+                                                        rows={6}
+                                                        style={{
+                                                            width: '100%',
+                                                            padding: '8px',
+                                                            border: '1px solid #d1d5db',
+                                                            borderRadius: '6px',
+                                                            fontSize: '13px',
+                                                            lineHeight: '1.4',
+                                                            resize: 'vertical'
+                                                        }}
+                                                    />
+                                                    <small style={{ display: 'block', color: '#6b7280', fontSize: '11px', marginTop: '4px' }}>
+                                                        This description will be used to generate the Hero Image.
+                                                    </small>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Persona/Angle Section - Show in Creative Mode */}
+                        {aiMode === 'creative' && (
+                            <div style={{ marginTop: '24px', padding: '16px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', color: '#374151' }}>
+                                    🎯 Persona / Angle (Optional but Recommended)
+                                </label>
+
+                                {/* Saved Persona Selector */}
+                                {savedPersonas.length > 0 && (
+                                    <div style={{ marginBottom: '12px' }}>
+                                        <select
+                                            onChange={handlePersonaSelect}
                                             style={{
-                                                marginTop: '12px',
                                                 width: '100%',
-                                                padding: '12px',
-                                                background: generatingVisualBrief ? '#9ca3af' : 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
-                                                color: 'white',
-                                                border: 'none',
-                                                borderRadius: '8px',
-                                                fontSize: '14px',
-                                                fontWeight: '600',
-                                                cursor: generatingVisualBrief ? 'not-allowed' : 'pointer',
-                                                boxShadow: '0 2px 8px rgba(14, 165, 233, 0.3)'
+                                                padding: '8px',
+                                                borderRadius: '6px',
+                                                border: '1px solid #cbd5e1',
+                                                fontSize: '13px',
+                                                color: '#475569'
                                             }}
                                         >
-                                            {generatingVisualBrief ? '🔄 Analyzing Creative...' : '🎨 Generate Visual Brief from Creative'}
-                                        </button>
+                                            <option value="">-- Load Saved Persona --</option>
+                                            {savedPersonas.map(p => (
+                                                <option key={p.id} value={p.id}>{p.name}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 )}
 
-                                {/* Visual Brief Editor - Shows after generation */}
-                                {visualBrief && (
-                                    <div style={{
-                                        marginTop: '16px',
-                                        padding: '16px',
-                                        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-                                        borderRadius: '8px',
-                                        border: '2px solid #0ea5e9'
-                                    }}>
-                                        <div style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            marginBottom: '8px'
-                                        }}>
-                                            <span style={{ fontSize: '20px', marginRight: '8px' }}>🎨</span>
-                                            <h4 style={{
-                                                margin: 0,
-                                                fontSize: '14px',
-                                                fontWeight: '600',
-                                                color: '#0369a1'
-                                            }}>
-                                                Visual Brief (Editable)
-                                            </h4>
-                                        </div>
-                                        <textarea
-                                            value={visualBrief}
-                                            onChange={(e) => setVisualBrief(e.target.value)}
-                                            rows={6}
+                                <textarea
+                                    value={persona}
+                                    onChange={(e) => setPersona(e.target.value)}
+                                    placeholder="Describe the target persona, angle, or specific tone for this advertorial..."
+                                    rows={3}
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px',
+                                        border: '1px solid #cbd5e1',
+                                        borderRadius: '6px',
+                                        fontSize: '14px',
+                                        marginBottom: '8px'
+                                    }}
+                                />
+
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    {!showSavePersona ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowSavePersona(true)}
                                             style={{
-                                                width: '100%',
-                                                padding: '12px',
-                                                border: '2px solid #bae6fd',
-                                                borderRadius: '6px',
+                                                background: 'none',
+                                                border: 'none',
+                                                color: '#4f46e5',
                                                 fontSize: '13px',
-                                                lineHeight: '1.6',
-                                                color: '#0c4a6e',
-                                                background: 'white',
-                                                resize: 'vertical',
-                                                fontFamily: 'inherit'
+                                                fontWeight: '600',
+                                                cursor: 'pointer',
+                                                padding: 0
                                             }}
-                                            placeholder="Visual brief will appear here..."
-                                        />
-                                        <small style={{
-                                            display: 'block',
-                                            marginTop: '8px',
-                                            fontSize: '12px',
-                                            color: '#0369a1',
-                                            fontStyle: 'italic'
-                                        }}>
-                                            ℹ️ Edit this description to customize your hero image. This will be used to create an image similar to your ad creative (without text/CTAs).
-                                        </small>
-                                    </div>
-                                )}
+                                        >
+                                            + Save this Persona
+                                        </button>
+                                    ) : (
+                                        <div style={{ display: 'flex', gap: '8px', flex: 1 }}>
+                                            <input
+                                                type="text"
+                                                value={personaName}
+                                                onChange={(e) => setPersonaName(e.target.value)}
+                                                placeholder="Persona Name (e.g., 'Aggressive Mom Angle')"
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '6px 10px',
+                                                    borderRadius: '4px',
+                                                    border: '1px solid #cbd5e1',
+                                                    fontSize: '13px'
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={handleSavePersona}
+                                                style={{
+                                                    padding: '6px 12px',
+                                                    background: '#4f46e5',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '4px',
+                                                    fontSize: '12px',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Save
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowSavePersona(false)}
+                                                style={{
+                                                    padding: '6px 12px',
+                                                    background: '#94a3b8',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '4px',
+                                                    fontSize: '12px',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
 
@@ -1337,41 +1504,21 @@ export default function NewArticle() {
                         />
                     </div>
 
-                    {/* Countdown Timer Settings */}
-                    <h3 style={{ marginTop: '32px', marginBottom: '16px', color: '#111', fontSize: '18px' }}>Countdown Timer</h3>
-
                     <div className="form-group">
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                             <input
                                 type="checkbox"
-                                checked={formData.countdown_timer.enabled}
-                                onChange={(e) => setFormData(prev => ({
-                                    ...prev,
-                                    countdown_timer: { ...prev.countdown_timer, enabled: e.target.checked }
-                                }))}
-                                style={{ width: 'auto' }}
+                                name="show_timer"
+                                checked={formData.show_timer}
+                                onChange={handleChange}
+                                style={{ width: 'auto', cursor: 'pointer' }}
                             />
-                            Enable Countdown Timer
+                            <span style={{ fontWeight: '500' }}>Show Countdown Timer</span>
                         </label>
-                        <small>Display a countdown timer in the urgency box</small>
+                        <small style={{ display: 'block', marginTop: '4px', color: '#666' }}>
+                            Enable this to display the countdown timer in the urgency box
+                        </small>
                     </div>
-
-                    {formData.countdown_timer.enabled && (
-                        <div className="form-group">
-                            <label>Timer Duration (minutes)</label>
-                            <input
-                                type="number"
-                                min="1"
-                                max="120"
-                                value={formData.countdown_timer.minutes}
-                                onChange={(e) => setFormData(prev => ({
-                                    ...prev,
-                                    countdown_timer: { ...prev.countdown_timer, minutes: parseInt(e.target.value) || 20 }
-                                }))}
-                            />
-                            <small>Set the countdown duration in minutes (default: 20)</small>
-                        </div>
-                    )}
 
                     {/* Comments Section */}
                     <h2 style={{ marginTop: '40px', marginBottom: '24px', color: '#111' }}>Comments Section</h2>

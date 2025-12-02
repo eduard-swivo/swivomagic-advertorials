@@ -14,30 +14,37 @@ const openai = new OpenAI({
 const SYSTEM_PROMPT = `You are an elite direct-response copywriter specializing in aggressive, conversion-optimized advertorials for cold Facebook traffic.
 
 CORE PRINCIPLES:
-- Focus on old-school direct response tactics
-- Be aggressive and clickbaity (but legal)
-- Use subjunctive mood (could/may/might) to avoid concrete claims
-- Create urgency and FOMO
-- Target pain points aggressively
-- Use social proof and authority
-- Create desire through storytelling
-- Make it feel like editorial content, not an ad
+- Focus purely on direct-response congruent for cold FB vid ad traffic.
+- Focus on old-school direct response, aggressive/grey-hat marketing.
+- Be aggressive and clickbaity (but legal).
+- Use subjunctive mood (could/may/might) to avoid concrete claims.
+- Create urgency and FOMO.
+- Target pain points aggressively.
+- Use social proof and authority.
+- Create desire through storytelling.
+- Make it feel like editorial content, not an ad.
 
 STYLE GUIDELINES:
-- Write like a real person sharing a discovery
-- Use conversational, relatable language
-- Include specific details and scenarios
-- Build credibility before the pitch
-- Use pattern interrupts
-- Create emotional resonance
-- End with strong, clear CTAs
+- Write like a real person sharing a discovery.
+- Use conversational, relatable language.
+- Include specific details and scenarios.
+- Build credibility before the pitch.
+- Use pattern interrupts.
+- Create emotional resonance.
+- End with strong, clear CTAs.
+- Use formatting to break up text: bullet points, checkmarks (✅), and bold text for emphasis.
+- Use emojis sparingly but effectively to draw attention.
 
 LEGAL COMPLIANCE:
-- Never make unsubstantiated health claims
-- Use "could", "may", "might" for benefits
-- Include disclaimers where needed
-- Avoid absolute guarantees
-- Don't make income claims
+- Never make unsubstantiated health claims.
+- Use "could", "may", "might" for benefits.
+- Include disclaimers where needed.
+- Avoid absolute guarantees.
+- Don't make income claims.
+
+CRITICAL INSTRUCTION:
+- THINK before you start. You should only finish working and submit your final output once you’re confident that an elite-level CRO/copywriter/marketer/designer would be proud of and consider their magnum opus.
+- The MAIN FOCUS is direct-response optimized as much as possible for conversions at lowest cost.
 
 Your goal: Create an advertorial that an elite CRO expert would consider their magnum opus.`;
 
@@ -88,7 +95,7 @@ async function scrapeProductPage(url) {
 }
 
 // Generate image using Google Gemini 3 Pro Image (Nano Banana Pro)
-async function generateImage(prompt, productDescription = '', isImage1 = false, referenceImages = null, fromAdCreative = false) {
+async function generateImage(prompt, productDescription = '', isImage1 = false, referenceImageUrl = null, allowProductInImage1 = false) {
     try {
         const apiKey = process.env.GOOGLE_API_KEY;
         if (!apiKey) throw new Error('Google API Key is missing');
@@ -100,54 +107,58 @@ async function generateImage(prompt, productDescription = '', isImage1 = false, 
         // Enhanced prompt for photorealism with Indian context + Product Description Enforcement
         let enhancedPrompt = prompt + " Indian household, Indian people, South Asian setting, raw photo, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3, candid photography, no illustration, no 3d render, no cartoon, no cgi";
 
-        // Apply product restrictions ONLY for Product mode (not Ad Creative mode)
-        // In Ad Creative mode, we follow the visual brief exactly
-        if (!fromAdCreative && (isImage1 || prompt.toLowerCase().includes('no product'))) {
-            enhancedPrompt += ". CRITICAL EXCLUSIONS: absolutely no bottles, no spray bottles, no cleaning products, no containers, no packages, no labels, no branded items, no solutions, no detergents, no cleaners, no supplies, no items on shelves, no items on tables, no items on counters. Focus only on people and environment.";
-            console.log('🚫 Added product restrictions for Product mode Image 1');
-        } else if (fromAdCreative) {
-            console.log('✅ Ad Creative mode - following visual brief exactly, no restrictions');
+        // FORCE CLOTHING VARIETY - Add to beginning of prompt for maximum impact
+        const clothingOptions = [
+            "woman wearing bright blue solid t-shirt and jeans",
+            "woman wearing vibrant green plain salwar kameez (no patterns)",
+            "woman wearing simple purple kurti with jeans",
+            "woman wearing pink solid color casual dress",
+            "woman wearing red saree with simple border"
+        ];
+        const randomClothing = clothingOptions[Math.floor(Math.random() * clothingOptions.length)];
+
+        // If prompt mentions "woman" or "mother" or "Indian", inject clothing at the START
+        if (prompt.toLowerCase().includes('woman') || prompt.toLowerCase().includes('mother') || prompt.toLowerCase().includes('indian')) {
+            enhancedPrompt = randomClothing + ", " + enhancedPrompt;
+            enhancedPrompt += ". CRITICAL: NO beige clothing, NO tan clothing, NO brown clothing, NO cream clothing, NO khaki, NO earth tones, NO small floral patterns. The woman MUST be wearing the specified bright colored clothing.";
         }
 
-        // Note: Removed aggressive negative prompts - now following visual brief exactly
-        // The visual brief should already describe what to include/exclude
+        // AGGRESSIVE NEGATIVE PROMPTS for Image 1 (Problem-only images) - ONLY if product is NOT allowed
+        if ((isImage1 && !allowProductInImage1) || prompt.toLowerCase().includes('no product')) {
+            enhancedPrompt += ". CRITICAL EXCLUSIONS: absolutely no bottles, no spray bottles, no cleaning products, no containers, no packages, no labels, no branded items, no solutions, no detergents, no cleaners, no supplies, no items on shelves, no items on tables, no items on counters. Focus only on people and environment.";
+            console.log('🚫 Added aggressive negative prompts for Image 1');
+        }
+
+        let imagePart = null;
+        // If we have a reference image and this is NOT the problem image (Image 1), use it
+        if (referenceImageUrl && !isImage1) {
+            try {
+                console.log('🖼️ Fetching reference image for generation:', referenceImageUrl);
+                const imgRes = await axios.get(referenceImageUrl, { responseType: 'arraybuffer' });
+                const base64 = Buffer.from(imgRes.data).toString('base64');
+                const mimeType = imgRes.headers['content-type'] || 'image/jpeg';
+
+                imagePart = {
+                    inlineData: {
+                        data: base64,
+                        mimeType: mimeType
+                    }
+                };
+
+                enhancedPrompt += " IMPORTANT: Use the provided image as a STRICT visual reference for the product's appearance, packaging, colors, and shape. The product in the generated image MUST look exactly like the reference image.";
+            } catch (e) {
+                console.error('Failed to fetch reference image:', e.message);
+            }
+        }
 
         if (productDescription && !isImage1) {
             enhancedPrompt += `. IMPORTANT PRODUCT DETAILS: ${productDescription}. Ensure the product in the image matches this description EXACTLY.`;
         }
 
-        // Prepare content parts
+        // Prepare contents
         const parts = [{ text: enhancedPrompt }];
-
-        // Add reference images if available (for Image 2/Solution)
-        if (referenceImages) {
-            const imagesToProcess = Array.isArray(referenceImages) ? referenceImages : [referenceImages];
-
-            console.log(`📸 Processing ${imagesToProcess.length} reference images...`);
-
-            for (const imgUrl of imagesToProcess) {
-                if (!imgUrl) continue;
-
-                try {
-                    const refImageRes = await axios.get(imgUrl, {
-                        responseType: 'arraybuffer',
-                        timeout: 5000
-                    });
-
-                    const refBase64 = Buffer.from(refImageRes.data).toString('base64');
-                    const mimeType = refImageRes.headers['content-type'] || 'image/jpeg';
-
-                    parts.push({
-                        inlineData: {
-                            mimeType,
-                            data: refBase64
-                        }
-                    });
-                } catch (e) {
-                    console.warn(`⚠️ Failed to attach reference image (${imgUrl}):`, e.message);
-                }
-            }
-            console.log(`✅ Added ${parts.length - 1} reference images to Gemini request`);
+        if (imagePart) {
+            parts.push(imagePart);
         }
 
         // Generate image
@@ -173,12 +184,12 @@ async function generateImage(prompt, productDescription = '', isImage1 = false, 
         const base64Image = imageData.inlineData.data;
         const buffer = Buffer.from(base64Image, 'base64');
 
-        // Convert to WebP using Sharp
+        // Convert to WebP using sharp
         const webpBuffer = await sharp(buffer)
-            .webp({ quality: 80 })
+            .webp({ quality: 80 }) // Optimize quality/size balance
             .toBuffer();
 
-        // Upload to Vercel Blob as WebP
+        // Upload to Vercel Blob
         const filename = `ai-generated-${Date.now()}.webp`;
         const blob = await put(filename, webpBuffer, {
             access: 'public',
@@ -205,9 +216,10 @@ async function generateImage(prompt, productDescription = '', isImage1 = false, 
 
             // Fetch DALL-E image and upload to Blob
             const imageRes = await axios.get(dalleUrl, { responseType: 'arraybuffer' });
+            const buffer = Buffer.from(imageRes.data);
 
-            // Convert to WebP using Sharp
-            const webpBuffer = await sharp(imageRes.data)
+            // Convert to WebP using sharp
+            const webpBuffer = await sharp(buffer)
                 .webp({ quality: 80 })
                 .toBuffer();
 
@@ -225,7 +237,8 @@ async function generateImage(prompt, productDescription = '', isImage1 = false, 
     }
 }
 
-// Generate article from product link
+// ... (rest of file until generateFromProductLink)
+
 // Generate article from product link
 async function generateFromProductLink(productUrl, productImages = null, productDescription = null, angle = 'before-after', productMainImage = null) {
     const productData = await scrapeProductPage(productUrl);
@@ -271,7 +284,26 @@ GENERATION ANGLE: ${selectedAngleInstruction}
 
 Generate a complete advertorial with:
 
-1. HEADLINE: Aggressive, clickbaity, curiosity-driven (use numbers, questions, or shocking statements)
+1. HEADLINE: Ultra-aggressive, clickbait-driven headline that STOPS the scroll
+   - **CRITICAL**: If a persona/angle is provided, the headline MUST be centered around that specific persona/angle
+   - Use proven clickbait formulas that create FOMO, curiosity, and urgency
+   - Make it feel like it was written specifically for the target audience
+   
+   **HEADLINE FORMULAS TO USE:**
+   - **Shocking Discovery**: "[Number] [Persona] Discovered This [Price] [Product Category] (What Happened Next Will Shock You)"
+   - **Warning/Danger**: "Warning: [Common Action] Could Be [Negative Outcome] (Here's What [Persona] Are Doing Instead)"
+   - **Secret Reveal**: "The [Adjective] Secret [Persona] Don't Want You To Know About [Problem]"
+   - **Before/After**: "From [Bad State] to [Good State]: How [Number] [Persona] [Achieved Result] With This [Price] [Product]"
+   - **Question Hook**: "Why Are [Number]% of [Persona] Switching to This [Price] [Product]? (The Answer Will Surprise You)"
+   - **Banned/Censored**: "They Tried to Hide This From [Persona]... But [Number] Women Found Out Anyway"
+   - **Time-Sensitive**: "[Number] [Persona] Are Doing This Right Now (And You're Missing Out)"
+   
+   **EXAMPLES:**
+   - For "Busy Mom" persona: "3,847 Indian Moms Are Hiding This ₹699 Bottle From Their Husbands (Here's Why)"
+   - For "Health-Conscious" persona: "Warning: Your Cleaning Products May Be Slowly Poisoning Your Family (73% of Indian Homes Affected)"
+   - For "Budget-Conscious" persona: "She Spent ₹2,000 on Cleaners Every Month... Until She Found This ₹699 Secret"
+   - For "Skeptical" persona: "I Didn't Believe It Either... Until I Saw What Happened After 7 Days"
+   - For "Desperate" persona: "After 15 Years of Struggling With [Problem], This ₹699 Solution Changed Everything"
 
 2. SLUG: Generate a URL-friendly slug from the headline
    - Convert to lowercase
@@ -294,13 +326,23 @@ Generate a complete advertorial with:
    - Make it feel real and authentic
    
    **FORMATTING RULES FOR STORY:**
-   - Use **bold** for product names, key phrases, and dramatic reveals
-   - Use **bold subheadings** to break up the story (e.g., "**The Turning Point:**", "**Why This ₹699 Cloth Is Viral:**")
-   - Use *italics* for asides or parenthetical thoughts (e.g., *(Imagine a split screen here: Left: Common rag. Right: Swivo Magic finish.)*)
-   - Bold important numbers and prices (e.g., "**₹699**", "**5x its weight**")
-   - Keep paragraphs short (2-4 sentences max)
-   - Use conversational, punchy language
+   - **CRITICAL**: Do not just write long paragraphs. Break up the text visually.
+   - **LISTS**: Include at least one **bulleted list** or **checklist** (using ✅) within the story to highlight key features or "why it works".
+   - **EMOJIS**: Use emojis (⚠️, 🛑, ✅, 😱, 👉) to highlight important sections or emotional triggers.
+   - Use **bold** for product names, key phrases, and dramatic reveals.
+   - Use **bold subheadings** to break up the story (e.g., "**The Turning Point:**", "**Why This ₹699 Cloth Is Viral:**").
+   - Use *italics* for asides or parenthetical thoughts.
+   - Bold important numbers and prices (e.g., "**₹699**", "**5x its weight**").
+   - Keep paragraphs short (2-4 sentences max).
+   - Use conversational, punchy language.
    - **CRITICAL: NEVER use em dashes (—). Use regular hyphens (-) or commas instead.**
+   
+   **DATA VISUALIZATION:**
+   - **IF** you mention studies, research, data, statistics, or scientific findings in the story:
+     * You MUST flag this by including a special marker: "[INFOGRAPHIC_HERE]"
+     * Place this marker immediately after the paragraph that mentions the data/study
+     * Example: "According to experts, these substances could lead to microbiome disruption... [INFOGRAPHIC_HERE]"
+     * This will trigger the generation of a professional infographic/graph to visualize the data
 
 5. BENEFITS (3-4 items):
    - Each with a catchy, **BOLD** title (e.g., "**Reason #1: It's Not Toxic (But It Works)**")
@@ -310,21 +352,24 @@ Generate a complete advertorial with:
    - Bold key phrases and product names in descriptions
 
 6. URGENCY BOX:
-   - Title: Create FOMO
+   - Title: Limited-time Offer
    - Text: Scarcity, urgency, or social proof
 
 7. CTA TEXT: Action-oriented, benefit-driven button text
 
-8. COMMENTS SECTION (Generate 5-10 random comments):
-   - Create between 5 and 10 realistic user comments (random number each time)
+8. COMMENTS SECTION (MINIMUM 5 comments, up to 7):
+   - **REQUIRED: Generate AT LEAST 5 realistic user comments**
    - Use "Hinglish" style (mix of Hindi and English)
    - Approx 10% Hindi words/phrases, 90% English
-   - Examples: "Bhai, this is amazing", "Maine order kiya tha, delivery fast thi", "Iska price kya hai?"
-   - Make them sound authentic and varied (some questions, some praise, some testimonials)
-   - TIMESTAMPS: Must be random DAYS apart, spread across 1-14 days
-   - Use varied formats: "2 days ago", "5 days ago", "1 week ago", "3 days ago", "10 days ago", "2 weeks ago"
-   - Each comment should have a DIFFERENT timestamp
-   - Sort comments by recency (most recent first)
+   - Examples: 
+     * "Bhai, this is amazing! Mujhe bhi order karna hai"
+     * "Maine order kiya tha, delivery fast thi. Very happy!"
+     * "Iska price kya hai? Looks good"
+     * "Yaar, maine try kiya. Works perfectly!"
+     * "Kahan se milega? Link do please"
+   - Make them sound authentic and varied (some questions, some praise, some sharing experience)
+   - TIMESTAMPS: Must be random DAYS apart (e.g., "2 days ago", "5 days ago", "1 week ago", "3 days ago"), NOT minutes or hours.
+   - Use realistic Indian names
 
 9. HERO IMAGE PROMPTS: Create 2 DRAMATIC, attention-grabbing image prompts that DIRECTLY relate to the selected ANGLE (${angle}).
    
@@ -352,6 +397,16 @@ Generate a complete advertorial with:
    
    **GENERAL RULES:**
    - IMPORTANT: If showing people, specify "Indian household" or "Indian family"
+   - **CLOTHING REQUIREMENTS (MANDATORY - DO NOT IGNORE):**
+     * **BANNED COLORS**: NO beige, NO tan, NO brown, NO cream, NO khaki, NO earth tones
+     * **BANNED PATTERNS**: NO small floral prints, NO traditional paisley patterns
+     * **REQUIRED**: Choose ONE of these EXACT clothing descriptions:
+       1. "wearing a bright blue solid color t-shirt and jeans"
+       2. "wearing a vibrant green salwar kameez (plain, no patterns)"
+       3. "wearing a simple purple kurti with jeans"
+       4. "wearing a pink casual dress (solid color)"
+       5. "wearing a red or orange saree (solid or simple border)"
+     * **CRITICAL**: Copy the EXACT clothing description into your image prompt word-for-word
    - Use dramatic lighting, close-ups, or striking scenarios
    ${productMainImage || (productImages && productImages.length > 0) ? '- You have seen the product image(s), so describe the product accurately in the prompts' : ''}
    - Focus on evoking emotion and curiosity
@@ -381,11 +436,12 @@ Return ONLY valid JSON in this exact format:
     "text": "urgency text"
   },
   "comments": [
-    {"name": "User 1", "text": "Comment text here", "time": "2 hours ago"},
-    {"name": "User 2", "text": "Another comment here", "time": "1 day ago"}
+    {"name": "User Name", "text": "Comment text here", "time": "2 days ago"}
   ],
   "cta_text": "CTA BUTTON TEXT >>",
-  "image_prompts": ["prompt 1", "prompt 2"]
+  "image_prompts": ["prompt 1", "prompt 2"],
+  "infographic_prompt": "detailed prompt for data visualization infographic (ONLY if story mentions studies/data, otherwise set to null)",
+  "infographic_paragraph_index": "0-indexed paragraph number where infographic should appear (ONLY if infographic is needed, otherwise set to null)"
 }`;
 
     // If product images are provided, use vision model
@@ -417,7 +473,7 @@ Return ONLY valid JSON in this exact format:
     }
 
     const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages,
         temperature: 0.9,
         max_tokens: 3000,
@@ -428,17 +484,12 @@ Return ONLY valid JSON in this exact format:
 
     // Generate images in parallel
     if (articleData.image_prompts && articleData.image_prompts.length > 0) {
-        // Prepare reference images for Image 2
-        const image2Refs = [];
-        if (productMainImage) image2Refs.push(productMainImage);
-        if (productImages && Array.isArray(productImages)) image2Refs.push(...productImages);
-
         const imagePromises = articleData.image_prompts.map((prompt, index) =>
             generateImage(
                 prompt,
                 productDescription,
                 index === 0, // isImage1
-                index === 1 ? image2Refs : null // Pass all reference images for Image 2
+                index === 1 ? productMainImage : null // Pass productMainImage for Image 2
             )
         );
         const images = await Promise.all(imagePromises);
@@ -449,98 +500,16 @@ Return ONLY valid JSON in this exact format:
 }
 
 // Generate article from ad creative
-async function generateFromAdCreative(imageUrl, productUrl, productDescription = null, productMainImage = null, visualBrief = null) {
+async function generateFromAdCreative(imageUrl, productUrl, productDescription = null, productMainImage = null, visualBrief = null, persona = null) {
     console.log('🎬 generateFromAdCreative called');
     console.log('Product URL:', productUrl);
     console.log('Has productDescription:', !!productDescription);
     console.log('Has productMainImage:', !!productMainImage);
-    console.log('Has visualBrief:', !!visualBrief);
 
     const productData = await scrapeProductPage(productUrl);
 
-    // If no visual brief provided, generate one
-    if (!visualBrief) {
-        console.log('📸 No visual brief provided, generating one...');
-        const visualBriefCompletion = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
-            messages: [
-                {
-                    role: "system",
-                    content: `You are an expert visual analyst specializing in extracting the PHOTOGRAPHIC ESSENCE of images.
-
-Your task: Describe the underlying photographic scene and mood, NOT the marketing elements.
-
-FOCUS ON:
-- Real photographic setting (home, kitchen, living room, etc.)
-- Real people: their genuine expressions, emotions, body language
-- Lighting style (natural, dramatic, soft, harsh, etc.)
-- Camera angle and composition (close-up, wide shot, eye-level, etc.)
-- Color mood (warm tones, cool tones, muted, vibrant)
-- Atmosphere and emotional tone (worried, happy, tense, calm)
-- Photography style (candid, professional, documentary, etc.)
-
-IGNORE COMPLETELY:
-- Product bottles, packages, or branded items
-- Graphic overlays, illustrations, or stylized elements
-- Text, headlines, buttons, or CTAs
-- Warning symbols, icons, or infographics
-- Any marketing or advertising elements
-- Transparent figures or anatomical diagrams
-
-EXAMPLE:
-Bad: "Cluttered countertop with cleaning bottles, graphic overlays of people with anatomical features"
-Good: "Warm-lit Indian kitchen with concerned family members, natural window light, close-up composition, serious expressions, documentary-style photography"
-
-Your description will be used to create a REAL PHOTOGRAPH with similar mood and composition.`
-                },
-                {
-                    role: "user",
-                    content: [
-                        {
-                            type: "text",
-                            text: `Look past the marketing elements and describe the PHOTOGRAPHIC SCENE:
-
-1. What is the REAL setting? (Ignore products/graphics, focus on the environment)
-2. Are there REAL PEOPLE visible? (Not graphic overlays - actual photographed people)
-   - What are their expressions and emotions?
-   - What is their body language?
-3. What is the LIGHTING like? (Natural, dramatic, soft, etc.)
-4. What is the CAMERA COMPOSITION? (Close-up, wide, angle, framing)
-5. What is the COLOR MOOD? (Warm, cool, muted, vibrant)
-6. What is the EMOTIONAL ATMOSPHERE? (Worried, tense, happy, calm)
-7. What PHOTOGRAPHY STYLE does it use? (Candid, professional, documentary)
-
-Describe this as if you're directing a photographer to recreate the SCENE (not the ad).
-
-Return ONLY a JSON object:
-{
-  "visual_brief": "Concise photographic description focusing on real scene, people, lighting, mood, and composition - NO products or graphics"
-}`
-                        },
-                        {
-                            type: "image_url",
-                            image_url: { url: imageUrl }
-                        }
-                    ]
-                }
-            ],
-            temperature: 0.7,
-            max_tokens: 500,
-            response_format: { type: "json_object" }
-        });
-
-        const visualBriefData = JSON.parse(visualBriefCompletion.choices[0].message.content);
-        visualBrief = visualBriefData.visual_brief || "Ad creative with dramatic composition";
-        console.log('✅ Visual Brief Generated:', visualBrief);
-    } else {
-        console.log('✅ Using provided visual brief:', visualBrief);
-    }
-
-    // STEP 2: Generate the advertorial content based on the ad creative
-    console.log('📝 Generating advertorial content...');
-
     const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages: [
             { role: "system", content: SYSTEM_PROMPT },
             {
@@ -548,102 +517,135 @@ Return ONLY a JSON object:
                 content: [
                     {
                         type: "text",
-                        text: `**ANALYZE THE UPLOADED AD CREATIVE AND CREATE A MATCHING ADVERTORIAL**
+                        text: `** ANALYZE THE UPLOADED AD CREATIVE AND CREATE A MATCHING ADVERTORIAL**
 
-You are looking at an ad creative image. Your job is to:
-1. **ANALYZE** the ad creative's headline, messaging, angle, and emotional tone
-2. **EXTRACT** the core problem/pain point being highlighted
-3. **IDENTIFY** the promise or transformation being offered
-4. **CREATE** a full advertorial that continues this exact narrative
+        You are looking at an ad creative image.Your job is to:
+    1. ** ANALYZE ** the ad creative's headline, messaging, angle, and emotional tone
+    2. ** EXTRACT ** the core problem / pain point being highlighted
+    3. ** IDENTIFY ** the promise or transformation being offered
+    4. ** CREATE ** a full advertorial that continues this exact narrative
 
-PRODUCT INFO (The Solution):
-- URL: ${productData.url}
-- Title: ${productData.title}
-- Description: ${productData.description}
-- Price: ${productData.price}
+PRODUCT INFO(The Solution):
+    - URL: ${productData.url}
+    - Title: ${productData.title}
+    - Description: ${productData.description}
+    - Price: ${productData.price}
 ${productDescription ? `- Physical Description: "${productDescription}"` : ''}
+${persona ? `\n**TARGET PERSONA / ANGLE:**\n"${persona}"\n(Write the entire advertorial specifically for this persona and angle. Adopt the tone, language, and emotional triggers that would resonate most with this specific audience.)` : ''}
 
-**CRITICAL INSTRUCTIONS:**
+** CRITICAL INSTRUCTIONS:**
 
 **HEADLINE & HOOK:**
-- The headline should echo or expand on the ad creative's main message
+- **CRITICAL**: The headline MUST be ultra-aggressive, clickbait-driven, and centered around the persona/angle if provided
+- The headline should echo or expand on the ad creative's main message BUT filtered through the persona's perspective
+- Use proven clickbait formulas that create FOMO, curiosity, and urgency
+
+**HEADLINE FORMULAS TO USE:**
+- **Shocking Discovery**: "[Number] [Persona] Discovered This [Price] [Product Category] (What Happened Next Will Shock You)"
+- **Warning/Danger**: "Warning: [Common Action] Could Be [Negative Outcome] (Here's What [Persona] Are Doing Instead)"
+- **Secret Reveal**: "The [Adjective] Secret [Persona] Don't Want You To Know About [Problem]"
+- **Before/After**: "From [Bad State] to [Good State]: How [Number] [Persona] [Achieved Result] With This [Price] [Product]"
+- **Question Hook**: "Why Are [Number]% of [Persona] Switching to This [Price] [Product]? (The Answer Will Surprise You)"
+- **Banned/Censored**: "They Tried to Hide This From [Persona]... But [Number] Women Found Out Anyway"
+- **Time-Sensitive**: "[Number] [Persona] Are Doing This Right Now (And You're Missing Out)"
+
+**EXAMPLES:**
+- "3,847 Indian Moms Are Hiding This ₹699 Bottle From Their Husbands (Here's Why)"
+- "Warning: Your Cleaning Products May Be Slowly Poisoning Your Family (73% of Indian Homes Affected)"
+- "She Spent ₹2,000 on Cleaners Every Month... Until She Found This ₹699 Secret"
+- "I Didn't Believe It Either... Until I Saw What Happened After 7 Days"
+
 - The hook should feel like a natural continuation of what the ad promised
 - Match the emotional intensity and urgency of the ad
 
-**STORY (7-10 paragraphs):**
-- Start with the EXACT problem/pain point shown in the ad creative
-- Build on the fear, frustration, or desire the ad triggered
-- **EXPAND WITH INSIGHTS:** Add 2 full paragraphs dedicated to "insights and discoveries" - explain the hidden causes of the problem or the "aha!" moment of discovery.
-- **ADD REAL-LIFE EXAMPLES:** Add 2 full paragraphs giving concrete, relatable examples of the problem in daily life (e.g., "I remember when...", "It happens every time you...").
+                        ** STORY(EXPANDED - 6 - 9 paragraphs):**
+                            - Start with the EXACT problem / pain point shown in the ad creative
+                                - Build on the fear, frustration, or desire the ad triggered
+                                    - ** EXPAND THE NARRATIVE **: Include 2 - 3 additional paragraphs that provide deeper insights, scientific discoveries(pseudo - science is fine if legal), or surprising facts related to the problem.
+- ** REAL LIFE EXAMPLES **: Include specific, relatable examples of how this problem affects daily life(e.g., "I realized my kids were breathing this in..." or "My neighbor actually had to replace her entire...").
 - Introduce "${productData.title}" as the solution the ad was hinting at
-- Use the same tone (scientific, emotional, urgent, etc.) as the ad
-- If the ad mentions specific dangers, statistics, or claims, reference them in the story
-- Make the story feel substantial and well-researched, not thin or superficial.
+        - Use the same tone(scientific, emotional, urgent, etc.) as the ad
+            - If the ad mentions specific dangers, statistics, or claims, reference them in the story
 
-**IMAGE GENERATION:**
-- **IMAGE 1 (HERO)**: Based on the HOOK/TITLE you generated from the ad creative
-  * The hook/title describes the PROBLEM - Image 1 must visualize ONLY that problem
-  * **CRITICAL PROHIBITION - Image 1 must NOT contain:**
-    - NO product bottles, containers, or packaging
-    - NO cleaning supplies or solutions
-    - NO branded items or product names
-    - NO "after" scenes or solutions
-  * **ONLY SHOW**: The danger, fear, problem, or emotional pain from the hook/title
-  * Examples:
+                ** IMAGE GENERATION:**
+- ** IMAGE 1(HERO) **: Based on the HOOK / TITLE you generated from the ad creative
+        * The hook / title describes the PROBLEM - Image 1 must visualize ONLY that problem
+            * ** CRITICAL PROHIBITION - Image 1 must NOT contain:**
+                - NO product bottles, containers, or packaging
+                    - NO cleaning supplies or solutions
+                        - NO branded items or product names
+                            - NO "after" scenes or solutions
+                                * ** ONLY SHOW **: The danger, fear, problem, or emotional pain from the hook / title
+                                    * Examples:
     - If hook is "The Silent Danger Lurking in Your Home" → Image 1 = "Worried Indian family in dimly lit home with toxic warning symbols on walls, child coughing, NO products visible"
-    - If hook is "Why Indian Mothers Are Switching" → Image 1 = "Frustrated Indian mother looking at messy kitchen, exhausted expression, NO cleaning products visible"
-    - If hook is "Scientists Discover Hidden Toxins" → Image 1 = "Indian household with danger/radiation symbols, concerned parents, NO products visible"
+        - If hook is "Why Indian Mothers Are Switching" → Image 1 = "Frustrated Indian mother looking at messy kitchen, exhausted expression, NO cleaning products visible"
+            - If hook is "Scientists Discover Hidden Toxins" → Image 1 = "Indian household with danger/radiation symbols, concerned parents, NO products visible"
 
-- **IMAGE 2**: Show the SOLUTION with the actual product
-  * Show "${productData.title}" as the answer to the problem from the ad
+                - ** IMAGE 2 **: Show the SOLUTION with the actual product
+                    * Show "${productData.title}" as the answer to the problem from the ad
+                        * Show relief, transformation, or safety WITH the product
   ${productMainImage ? '* **CRITICAL: Base the product appearance on the MAIN PRODUCT IMAGE provided. Match it exactly.**' : ''}
-  * Show relief, transformation, or safety WITH the product
 
-**FORMATTING:**
-- Generate a URL-friendly slug from the headline (lowercase, hyphens, 5-8 words max)
-- Hook paragraph must be plain text (NO asterisks or markdown formatting)
-- **CRITICAL: NEVER use em dashes (—). Use regular hyphens (-) or commas instead.**
-- Use **bold** for product names and key phrases in the story
-- Keep paragraphs short (2-4 sentences)
-- Use conversational language
+**CLOTHING REQUIREMENTS (MANDATORY - DO NOT IGNORE):**
+  * **BANNED COLORS**: NO beige, NO tan, NO brown, NO cream, NO khaki, NO earth tones
+  * **BANNED PATTERNS**: NO small floral prints, NO traditional paisley patterns
+  * **REQUIRED**: Choose ONE of these EXACT clothing descriptions:
+    1. "wearing a bright blue solid color t-shirt and jeans"
+    2. "wearing a vibrant green salwar kameez (plain, no patterns)"
+    3. "wearing a simple purple kurti with jeans"
+    4. "wearing a pink casual dress (solid color)"
+    5. "wearing a red or orange saree (solid or simple border)"
+  * **CRITICAL**: Copy the EXACT clothing description into your image prompt word-for-word
 
-**COMMENTS (CRITICAL: Generate 5-10 comments):**
-- You MUST generate between 5 and 10 separate comments (randomly select a number between 5 and 10).
-- Do NOT generate just one comment.
-- Language: "Hinglish" style (mix of Hindi and English, approx 10% Hindi).
-- Timestamps: MUST be random and varied. Do NOT use the same timestamp for all.
-- Spread timestamps across different times and days (e.g., "2 hours ago", "1 day ago", "3 days ago", "1 week ago").
-- Make them sound authentic (questions, praise, testimonials).
-- Sort by recency (most recent first).
 
-**AUTHOR:**
-- Realistic Indian woman's name with abbreviated surname (e.g., "Priya S.")
+** FORMATTING:**
+        - Generate a URL - friendly slug from the headline(lowercase, hyphens, 5 - 8 words max)
+            - Hook paragraph must be plain text(NO asterisks or markdown formatting)
+                - ** STORY FORMATTING **:
+  * ** LISTS **: You MUST include a ** bulleted list ** or ** checklist ** (✅) in the story to break up the text.
+  * ** EMOJIS **: Use emojis(⚠️, 🛑, ✅, 😱) to highlight key points.
+  * ** BOLD **: Use ** bold ** for key phrases, emotional triggers, and product names.
+- ** CRITICAL: NEVER use em dashes(—).Use regular hyphens(-) or commas instead.**
+        - Keep paragraphs short(2 - 4 sentences)
+            - Use conversational language
+
+
+                ** COMMENTS:**
+- ** REQUIRED: Generate AT LEAST 5 realistic user comments(up to 7) **
+        - Use Hinglish style(10 % Hindi, 90 % English)
+            - Examples: "Bhai, this is amazing! Mujhe bhi order karna hai", "Maine order kiya tha, delivery fast thi. Very happy!", "Iska price kya hai? Looks good"
+                - Timestamps must be random DAYS apart(e.g., "2 days ago", "5 days ago", "1 week ago", "3 days ago")
+                    - Make them sound authentic and varied(questions, praise, experiences)
+                        - Use realistic Indian names
+
+
+                            ** AUTHOR:**
+                                - Realistic Indian woman's name with abbreviated surname (e.g., "Priya S.")
 
 Return ONLY valid JSON in this exact format:
-{
-  "title": "headline here",
-  "slug": "url-friendly-slug",
-  "category": "Lifestyle",
-  "author": "Name Here",
-  "advertorial_label": "LABEL HERE",
-  "excerpt": "teaser here",
-  "hook": "hook paragraph",
-  "story": ["paragraph 1", "paragraph 2", ...],
-  "benefits": [
-    {"title": "Benefit 1", "description": "details"},
-    {"title": "Benefit 2", "description": "details"}
-  ],
-  "urgency_box": {
-    "title": "urgency title",
-    "text": "urgency text"
-  },
-  "comments": [
-    {"name": "User 1", "text": "Comment text here", "time": "2 hours ago"},
-    {"name": "User 2", "text": "Another comment here", "time": "1 day ago"}
-  ],
-  "cta_text": "CTA BUTTON TEXT >>",
-  "image_prompts": ["prompt 1", "prompt 2"]
-}`
+    {
+        "title": "headline here",
+            "slug": "url-friendly-slug",
+                "category": "Lifestyle",
+                    "author": "Name Here",
+                        "advertorial_label": "LABEL HERE",
+                            "excerpt": "teaser here",
+                                "hook": "hook paragraph",
+                                    "story": ["paragraph 1", "paragraph 2", ...],
+                                        "benefits": [
+                                            { "title": "Benefit 1", "description": "details" },
+                                            { "title": "Benefit 2", "description": "details" }
+                                        ],
+                                            "urgency_box": {
+            "title": "urgency title",
+                "text": "urgency text"
+        },
+        "comments": [
+            { "name": "User Name", "text": "Comment text here", "time": "2 days ago" }
+        ],
+            "cta_text": "CTA BUTTON TEXT >>",
+                "image_prompts": ["prompt 1", "prompt 2"]
+    } `
                     },
                     {
                         type: "image_url",
@@ -661,28 +663,45 @@ Return ONLY valid JSON in this exact format:
 
     const articleData = JSON.parse(completion.choices[0].message.content);
 
-    // NOTE: Skipping the post-processing regeneration step because we're using the visual brief
-    // directly for Image 1. The visual brief approach is more accurate for matching the ad creative.
-
     // POST-PROCESSING: Use regenerate API's proven approach for Image 1
-    // DISABLED: This was overriding the visual brief. We now use visual brief directly.
-    /*
+    // Instead of trusting the AI's image prompts, regenerate them using the working method
+    if (visualBrief) {
+        console.log('✅ Using provided VISUAL BRIEF for Image 1');
+        if (!articleData.image_prompts) articleData.image_prompts = ["", ""];
+
+        // Use the visual brief for Image 1
+        articleData.image_prompts[0] = visualBrief;
+
+        // We still need to ensure Image 2 is good. 
+        // If the initial generation didn't give a good Image 2, we might want to regenerate it.
+        // But for now, let's assume the initial generation gave a decent Image 2 prompt, 
+        // or we can trigger the regeneration ONLY for Image 2 if we really wanted to, but that's complex.
+        // Let's just trust the initial Image 2 or the one from the regeneration block below if we decide to run it.
+
+        // Actually, if we have a visual brief, we should probably SKIP the regeneration block for Image 1,
+        // but we might still want the "proven method" for Image 2 if the initial one was bad.
+        // However, the regeneration block generates BOTH.
+
+        // Strategy: Run the regeneration block to get a good Image 2 (and a backup Image 1),
+        // then OVERWRITE Image 1 with the visual brief.
+    }
+
     if (articleData.hook) {
         console.log('🔄 Regenerating image prompts using proven method...');
 
         try {
             // Use the EXACT same approach as /api/regenerate-images which works perfectly
-            const imageSystemPrompt = `You are an expert art director. Create 2 distinct, dramatic image prompts based on the provided hook and product info.
-        
-STRUCTURE:
-- Image 1: THE PROBLEM (Pain point, frustration, mess - NO product)
-- Image 2: THE SOLUTION (Transformation, product in action, before/after)
+            const imageSystemPrompt = `You are an expert art director.Create 2 distinct, dramatic image prompts based on the provided hook and product info.
 
-CONTEXT:
-- Product: ${productData.title}
+        STRUCTURE:
+    - Image 1: THE PROBLEM(Pain point, frustration, mess - NO product)
+        - Image 2: THE SOLUTION(Transformation, product in action, before / after)
+
+    CONTEXT:
+    - Product: ${productData.title}
 ${productDescription ? `- Physical Description: "${productDescription}" (Adhere strictly to this)` : ''}
-- Setting: Indian household
-- Style: Photorealistic, dramatic lighting, candid
+    - Setting: Indian household
+        - Style: Photorealistic, dramatic lighting, candid
 
 ${productMainImage ? 'IMPORTANT: You have seen the product main image. Describe the product accurately in Image 2.' : ''}
 
@@ -691,7 +710,7 @@ Return ONLY a JSON array of 2 strings: ["prompt 1", "prompt 2"]`;
             const imageUserPrompt = `HOOK: "${articleData.hook}"`;
 
             const imageCompletion = await openai.chat.completions.create({
-                model: "gpt-4o-mini",
+                model: "gpt-4o",
                 messages: [
                     { role: "system", content: imageSystemPrompt },
                     { role: "user", content: imageUserPrompt }
@@ -723,12 +742,16 @@ Return ONLY a JSON array of 2 strings: ["prompt 1", "prompt 2"]`;
             // Fall back to original prompts if regeneration fails
         }
     }
-    */
+
+    // OVERRIDE Image 1 with Visual Brief if provided (doing it AFTER regeneration to ensure it takes precedence)
+    if (visualBrief && articleData.image_prompts && articleData.image_prompts.length > 0) {
+        console.log('🚀 OVERRIDING Image 1 with Visual Brief');
+        articleData.image_prompts[0] = visualBrief;
+    }
 
     // FINAL SAFETY CHECK: Scan Image 1 for product keywords and force override if found
-    // DISABLED: Not needed when using visual brief approach
-    /*
-    if (articleData.image_prompts && articleData.image_prompts.length > 0) {
+    // BUT: Skip this check if a visual brief was provided by the user
+    if (!visualBrief && articleData.image_prompts && articleData.image_prompts.length > 0) {
         const image1 = articleData.image_prompts[0].toLowerCase();
         const productKeywords = ['bottle', 'product', 'cleaning', 'spray', 'container', 'package', 'shelf', 'label', 'brand', 'solution', 'detergent', 'cleaner', 'supplies'];
         const hasProduct = productKeywords.some(kw => image1.includes(kw));
@@ -743,43 +766,20 @@ Return ONLY a JSON array of 2 strings: ["prompt 1", "prompt 2"]`;
             console.log('✅ FORCED OVERRIDE: Replaced with problem-only prompt');
         }
     }
-    */
 
-    // Generate images with visual brief for Image 1
+    // Generate images in parallel with isImage1 flag
     if (articleData.image_prompts && articleData.image_prompts.length > 0) {
-        const image2Refs = [];
-        if (productMainImage) image2Refs.push(productMainImage);
-
-        // For Image 1 (Hero): Use the visual brief to create a similar image without text
-        const heroImagePrompt = `${visualBrief}. Create a similar image with the same composition, mood, lighting, and visual style. Indian household setting. CRITICAL: Do NOT include any text overlays, captions, headlines, buttons, or call-to-action elements. Focus purely on the visual scene, people, emotions, and environment. Photorealistic, candid photography, dramatic lighting.`;
-
-        console.log('🎨 Image 1 (Hero) - Using Visual Brief:', heroImagePrompt);
-        console.log('🎨 Image 2 (Solution) - Using AI Prompt:', articleData.image_prompts[1]);
-
-        // Generate both images
-        const imagePromises = [
-            // Image 1: Based on visual brief (no text/CTAs)
+        const imagePromises = articleData.image_prompts.map((prompt, index) =>
             generateImage(
-                heroImagePrompt,
+                prompt,
                 productDescription,
-                true, // isImage1
-                null,
-                true // fromAdCreative - Allow products/bottles if described in visual brief
-            ),
-            // Image 2: Based on AI-generated solution prompt
-            generateImage(
-                articleData.image_prompts[1] || articleData.image_prompts[0],
-                productDescription,
-                false, // isImage1
-                image2Refs // Pass reference images for Image 2
+                index === 0, // isImage1
+                index === 1 ? productMainImage : null, // Pass productMainImage for Image 2
+                !!visualBrief // allowProductInImage1: true if visualBrief exists
             )
-        ];
-
+        );
         const images = await Promise.all(imagePromises);
         articleData.generated_images = images.filter(img => img !== null);
-
-        // Store the visual brief in the article data for reference
-        articleData.visual_brief = visualBrief;
     }
 
     return articleData;
@@ -788,7 +788,7 @@ Return ONLY a JSON array of 2 strings: ["prompt 1", "prompt 2"]`;
 // API Route Handler
 export async function POST(request) {
     try {
-        const { mode, productUrl, productImages, productDescription, productMainImage, imageUrl, angle, visualBrief } = await request.json();
+        const { mode, productUrl, productImages, productDescription, productMainImage, imageUrl, angle, visualBrief, persona } = await request.json();
 
         console.log('Generating article in mode:', mode, 'with angle:', angle);
 
@@ -810,7 +810,7 @@ export async function POST(request) {
                     { status: 400 }
                 );
             }
-            articleData = await generateFromAdCreative(imageUrl, productUrl, productDescription, productMainImage, visualBrief);
+            articleData = await generateFromAdCreative(imageUrl, productUrl, productDescription, productMainImage, visualBrief, persona);
         } else {
             return NextResponse.json(
                 { success: false, error: 'Invalid mode' },
