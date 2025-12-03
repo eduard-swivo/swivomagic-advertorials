@@ -150,7 +150,7 @@ export default function NewArticle() {
 
         setAnalyzingCreative(true);
         try {
-            const res = await fetch('/api/analyze-creative', {
+            const res = await fetch('/api/generate-visual-brief', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ imageUrl: imageUrlToSend })
@@ -158,7 +158,7 @@ export default function NewArticle() {
 
             const data = await res.json();
             if (data.success) {
-                setVisualBrief(data.visualBrief);
+                setVisualBrief(data.visual_brief);
             } else {
                 alert('Error analyzing image: ' + data.error);
             }
